@@ -1,0 +1,9 @@
+README for the CmdLine directory
+--------------------------------
+
+A simple library to provde access to command line options. See
+example.cc for an illustration of how to use it.
+
+type "make" (or scons) to build it. Note that the "scons" biuld tool
+must be installed for this to work...
+

@@ -1,0 +1,1046 @@
+// main22.cc is a part of the PYTHIA event generator.
+// Copyright (C) 2014 Torbjorn Sjostrand.
+// PYTHIA is licenced under the GNU GPL version 2, see COPYING for details.
+// Please respect the MCnet Guidelines, see GUIDELINES for details.
+
+// Simple illustration how to provide (a) your own resonance-width class,
+// and (b) your own cross-section class, with instances handed in to Pythia.
+// The hypothetical scenario is that top would have been so long-lived
+// that a toponium resonance Theta could form. Then production could
+// proceed via q qbar -> gamma*/Z* -> Theta, with decay either to
+// a fermion pair or (dominantly) to three gluons.
+// The implementation is not physically correct in any number of ways,
+// but should exemplify the strategy needed for realistic cases.
+#include <cstring>
+#include <sstream>
+#include <fstream>
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <cmath>
+
+//root
+#include "TROOT.h"
+#include "TRandom.h"
+#include "TApplication.h"
+#include "TObjArray.h"
+#include "TDatabasePDG.h"
+#include "TParticlePDG.h"
+#include "TLorentzVector.h"
+
+// delphes library
+#include "modules/Delphes.h"
+#include "classes/DelphesClasses.h"
+#include "classes/DelphesFactory.h"
+
+#include "Pythia8/Pythia.h"
+#include "CombineMatchingInput.h"
+
+#include "Zprime_hidden.hh"
+#include "gluonportal.hh"
+
+#include "CmdLine/CmdLine.hh"
+#include "fastjet/ClusterSequence.hh"
+#include "fastjet/Selector.hh"
+//#include "fastjet/contrib/Nsubjettiness.hh"
+#include "fastjet/contribs/Nsubjettiness/Nsubjettiness.hh"
+#include "tools.h"
+
+//using namespace Pythia8;
+using namespace fastjet;
+using namespace fastjet::contrib;
+using namespace std;  
+
+
+double MT(const PseudoJet& MEt,
+	  const PseudoJet& jet1_,
+	  const PseudoJet& jet2_){
+  PseudoJet jj= jet1_ + jet2_;
+
+  double ET= jj.mperp();
+  double MT = sqrt(jj.m2()+ 2*
+		   (MEt.pt()*jj.pt() -
+		    dot3(jj, MEt)));
+
+  return MT;
+}
+
+double Mcol(const PseudoJet& MEt, 
+		     const PseudoJet& jet1_,
+		     const PseudoJet& jet2_){
+  
+  PseudoJet jet1(jet1_), jet2(jet2_);
+
+  reset_PtEtaPhiM(jet1, 1./cosh(jet1.eta()),
+		  jet1.eta(), jet1.phi());
+  reset_PtEtaPhiM(jet2, 1./cosh(jet2.eta()),
+		  jet2.eta(), jet2.phi());
+  
+  double mat[2][2] =
+    { {jet1.px(), jet2.px()} ,
+      {jet1.py(), jet2.py()} };
+  
+  //matrix must be invertible
+  if(invert(mat) == 0)
+    {
+      cout<<"ERROR: not invertible!"<<endl;
+      return -1;
+    }
+  
+
+  double c1 = 
+    mat[0][0]*MEt.px() + mat[0][1]*MEt.py();
+  
+  double c2 = 
+    mat[1][0]*MEt.px() + mat[1][1]*MEt.py();
+
+  jet1*= c1;
+  jet2*= c2;
+  
+  reset_PtEtaPhiM(jet1, jet1.pt(), jet1.eta(), jet1.phi());
+  reset_PtEtaPhiM(jet2, jet2.pt(), jet2.eta(), jet2.phi());
+  
+  return (jet1+jet2+ jet1_ + jet2_).m();
+  
+}
+
+
+string print_constit(const PseudoJet& jet, 
+		     int evt, int njet = -1, int type=2){
+
+  double cpt = jet.pt();
+  double cm = jet.m();
+  double ceta = jet.eta();
+  double cphi = jet.phi();	
+  
+  stringstream sout;
+
+  sout << type <<","
+       << evt <<","
+       << njet <<","
+       << cpt <<","
+       << cm <<","
+       << ceta <<","
+       << cphi <<","
+       << charge(jet) <<endl;
+  
+  return sout.str();
+}
+
+string print_constit(const Candidate* jet, 
+		     int evt, int njet = -1, int type=2){
+  
+  double cpt = jet->Momentum.Pt();
+  double cm = jet->Momentum.M();
+  double ceta = jet->Momentum.Eta();
+  double cphi = fix_phi(jet->Momentum.Phi());	
+  
+  stringstream sout;
+
+  sout << type <<","
+       << evt <<","
+       << njet <<","
+       << cpt <<","
+       << cm <<","
+       << ceta <<","
+       << cphi <<","
+       << jet->Charge <<endl;
+  
+  return sout.str();
+}
+
+
+string print_jet(Candidate* jet, int evt, int njet = -1){
+
+  TObjArray* constit = jet->GetCandidates();
+  stringstream sout;
+
+  //first print the constituents
+  for (int j = 0; j < constit->GetEntriesFast(); j++){
+    sout<< print_constit((Candidate*) constit->At(j),
+			 evt, njet);
+  }
+  
+  //now print the jet itself
+  double jet_charge = charge(constit);
+  double jet_dipole = dipole(constit);
+  double jet_tripole = tripole(constit);
+
+  double ECC1 = corr1(constit);
+  double ECC2 = corr2(constit);
+  double ECC3 = corr3(constit);
+  
+  double ECC21 = 0, ECC32 =0;
+  
+  if (ECC1 > 0.)
+    ECC21 = ECC2/(ECC1*ECC1);
+  
+  if (ECC2 > 0.)
+    ECC32 = ECC3*ECC1 / (ECC2*ECC2);
+  
+  double tau1 = jet->Tau[0];
+  double tau2 = jet->Tau[1];
+  double tau3 = jet->Tau[2];
+  
+  if(tau2 > tau1 || tau3 > tau2)
+    cout<<"Nsub Error: "<<tau1<<", "<<tau2<<", "<<tau3<<endl;
+  
+  //then print out the jet itself
+  sout << 1 <<","
+       << evt <<","
+       << njet <<","
+       << jet->Momentum.Pt()<<","
+       << jet->Momentum.M()<<","
+       << jet->Momentum.Eta()<<","
+       << fix_phi(jet->Momentum.Phi())<<","
+       << jet_charge << ","
+       << jet_dipole << ","
+       << jet_tripole << "," 
+       << ECC21 << ","
+       << ECC32 << ","
+       << constit->GetEntriesFast() << "," 
+       << charge_ratio(constit) << ","
+       << tau1 <<","
+       << tau2 <<","
+       << tau3 <<endl;
+  
+  return sout.str();
+
+}
+
+string print_jet(const PseudoJet& jet, int evt, int njet = -1){
+
+  vector<PseudoJet> constit = jet.constituents();
+  stringstream sout;
+
+  //first print the constituents
+  for (int j = 0; j < constit.size(); j++){
+    sout<< print_constit(constit[j], evt, njet);
+  }
+  
+  //now print the jet itself
+  double jet_charge = charge(constit);
+  double jet_dipole = dipole(constit);
+  double jet_tripole = tripole(constit);
+
+  double ECC1 = corr1(constit);
+  double ECC2 = corr2(constit);
+  double ECC3 = corr3(constit);
+  
+  double ECC21 = 0, ECC32 =0;
+  
+  if (ECC1 > 0.)
+    ECC21 = ECC2/(ECC1*ECC1);
+  
+  if (ECC2 > 0.)
+    ECC32 = ECC3*ECC1 / (ECC2*ECC2);
+  
+  double tau1 = -1; //psub1->result(jet);
+  double tau2 = -1; //psub2->result(jet);
+  double tau3 = -1; //psub3->result(jet);
+  
+  if(tau2 > tau1 || tau3 > tau2)
+    cout<<"Nsub Error: "<<tau1<<", "<<tau2<<", "<<tau3<<endl;
+  
+  //then print out the jet itself
+  sout << 1 <<","
+       << evt <<","
+       << njet <<","
+       << jet.pt()<<","
+       << jet.m()<<","
+       << jet.eta()<<","
+       << jet.phi()<<","
+       << jet_charge << ","
+       << jet_dipole << ","
+       << jet_tripole << "," 
+       << ECC21 << ","
+       << ECC32 << ","
+       << constit.size() << "," 
+       << charge_ratio(constit) << ","
+       << tau1 <<","
+       << tau2 <<","
+       << tau3 <<endl;
+  
+  return sout.str();
+
+}
+
+void init_susy(Pythia& pythia, string mode){
+
+  cout<<"INFO: pp -> "<<mode<<" enabled "<<endl;
+  
+  pythia.readString("SLHA:readFrom = 1");
+  pythia.readString("SLHA:file = slha_out");
+  pythia.readString("SLHA:verbose = 3");
+  pythia.readString("SUSY:qqbar2squarkantisquark = on");
+  
+}
+
+void init_Zprime(Pythia& pythia, double mZ, int id=666){
+
+  pythia.readString
+    (add_fb(id, 
+	    ":new = Zprime void 1 0 0 100.0 1.0 100. 100. ", 0));
+
+  pythia.readString(add_fb(id, ":m0 = ", mZ));
+  pythia.readString(add_fb(id, ":mWidth = ", mZ*0.02));
+  pythia.readString(add_fb(id, ":mMin = ", mZ*0.9));
+  pythia.readString(add_fb(id, ":mMax = ", mZ*1.1));
+  cout<<"Resonance mass: "<<mZ<<endl;
+}
+
+void init_Higgs(Pythia& pythia, double mH, int id=667){
+
+  pythia.readString
+    (add_fb(id, 
+	    ":new = Higgs void 1 0 0 20.0 0.1 19.9 20.1 ", 0));
+
+  pythia.readString(add_fb(id, ":m0 = ", mH));
+  pythia.readString(add_fb(id, ":mWidth = ", mH*0.02));
+  pythia.readString(add_fb(id, ":mMin = ", mH*0.96));
+  pythia.readString(add_fb(id, ":mMax = ", mH*1.04));
+  pythia.readString("667:isResonance = true");
+
+  cout<<"Resonance mass: "<<mH<<endl;
+
+}
+
+void init_Zqcd(Pythia& pythia, string mode,
+	      double mZ=1000){
+
+  SigmaProcess* myprocess = new Sigma2qqbar2Zprime(1);
+  pythia.setSigmaPtr(myprocess);
+  
+  cout<<"INFO: qqbar -> Z' -> qcd "<<endl;
+  init_Zprime(pythia, mZ);
+}
+
+void init_qcd(Pythia& pythia, string mode){
+
+  pythia.readString("HardQCD:all = off");
+
+  if (mode == "qcd" || mode == "gg"){
+    pythia.readString("HardQCD:gg2gg = on");
+    pythia.readString("HardQCD:qqbar2gg = on");
+  }
+
+  if (mode == "qcd" || mode == "qq"){
+    pythia.readString("HardQCD:gg2qqbar = on");
+    pythia.readString("HardQCD:qq2qq = on");
+    pythia.readString("HardQCD:qqbar2qqbarNew = on");
+  }
+
+  if (mode == "qcd" || mode == "gq" || mode == "qg"){
+    pythia.readString("HardQCD:qg2qg = on");    
+  }
+  
+  cout<<"INFO: pp -> "<<mode<<" enabled "<<endl;
+  
+}
+
+
+void init_bbbar(Pythia& pythia, string mode=""){
+
+  pythia.readString("HardQCD:hardbbbar = on");
+
+}
+
+void init_hidden(Pythia& pythia, 
+		 double mass=10.0,
+		 double frag=0.8,
+		 double alpha=1.0,
+		 double mZ = 1000,
+		 double inv = 0.3,
+		 bool run=false
+		 ){
+  
+  if(run){
+    alpha = 1.0/(1.0/(2*PI)*(11./3.* 2. - 2./3.)*
+		 log(1000./alpha));
+    cout<<"running enabled, alpha(1TeV) is: "<<alpha<<endl;
+  }
+    pythia.readString("4900001:m0 = 5000");
+    pythia.readString("4900002:m0 = 5000");
+    pythia.readString("4900003:m0 = 5000");
+    pythia.readString("4900004:m0 = 5000");
+    pythia.readString("4900005:m0 = 5000");
+    pythia.readString("4900006:m0 = 5000");
+    pythia.readString("4900011:m0 = 5000");
+    
+    pythia.readString("4900012:m0 = 5000");
+    
+    pythia.readString("4900013:m0 = 5000");
+    pythia.readString("4900014:m0 = 5000");
+    pythia.readString("4900015:m0 = 5000");
+    pythia.readString("4900016:m0 = 5000");
+
+    pythia.readString(add_st("4900101:m0 = ", mass/2));
+    pythia.readString
+      (add_st("4900101:mWidth = ", mass/100));
+    pythia.readString
+      (add_st("4900101:mMin = ", mass/2 - mass/100));
+    pythia.readString
+      (add_st("4900101:mMax = ", mass/2 + mass/100));
+
+    pythia.readString("HiddenValley:spinqv = 0");
+    pythia.readString("HiddenValley:FSR = on");
+    pythia.readString("HiddenValley:fragment = on");
+
+    if(run)
+      pythia.readString("HiddenValley:Run = on");
+    else
+      pythia.readString("HiddenValley:Run = off");
+
+
+    pythia.readString(add_st("4900111:m0 = ", mass));
+    pythia.readString(add_st("4900113:m0 = ", mass));
+
+    pythia.readString(add_st("4900211:m0 = ", mass/2-0.01));
+    pythia.readString(add_st("4900213:m0 = ", mass/2-0.01));
+
+    pythia.readString(add_st("HiddenValley:bmqv2 = ", frag));
+
+    pythia.readString
+      (add_st("HiddenValley:pTminFSR = ", mass));
+
+    
+    pythia.readString
+      (add_st("HiddenValley:nFlav = ", 1));
+
+    //onMode bRatio meMode product1 product2
+    /*
+    pythia.readString("4900111:onechannel = 1 " 
+		      + to_st(1-inv)
+		      + " 91 21 21");
+    */
+
+    
+    pythia.readString("4900111:onechannel = 1 " 
+		      + to_st((1-inv)/5.)
+		      + " 91 -1 1");
+
+    pythia.readString("4900111:addchannel = 1 " 
+		      + to_st((1-inv)/5.)
+		      + " 91 -2 2");
+
+    pythia.readString("4900111:addchannel = 1 " 
+		      + to_st((1-inv)/5.)
+		      + " 91 -3 3");
+
+    pythia.readString("4900111:addchannel = 1 " 
+		      + to_st((1-inv)/5.)
+		      + " 91 -4 4");
+
+    pythia.readString("4900111:addchannel = 1 " 
+		      + to_st((1-inv)/5.)
+		      + " 91 -5 5");
+
+    pythia.readString("4900111:addchannel = 1 " 
+		      + to_st(inv)
+		      + " 0 4900211 -4900211");
+
+    pythia.readString("4900113:onechannel = 1 1 92 21 21 21");
+
+    //disable spin 1 mesons
+    pythia.readString
+      (add_st("HiddenValley:probVector = ", 0.0));
+
+    //change FSR strength
+    pythia.readString
+      (add_st("HiddenValley:alphaFSR = ", alpha));
+
+    init_Zprime(pythia, mZ);
+    
+    // scale = 1 TeV
+    SigmaProcess* myprocess = new Sigma2qqbar2Zprime(4900101);
+    pythia.setSigmaPtr(myprocess);
+
+
+    cout<<"INFO: qqbar -> Z' -> dark scalars enabled "<<endl;
+    cout<<"INFO: dark meson = "<<mass<<" GeV"<<endl;
+    cout<<"INFO: alpha = "<<alpha<<", "
+	<<"invisible ratio = "<<inv<<endl; 
+}
+
+
+
+
+//function to input all particles to delphes
+void Pythia_to_Delphes(DelphesFactory* factory, 
+		       TObjArray* ary,
+		       Pythia8::Event& evt,
+		       vector<PseudoJet>* muons=NULL){
+  
+  //loop over particles
+  for(int i=0; i<evt.size(); ++i){
+    Pythia8::Particle& p = evt[i];
+
+    
+    if(!p.isVisible() || (p.statusHepMC()) != 1)
+	 continue;
+    
+
+    Candidate* can = factory->NewCandidate();
+    can->PID = p.id();
+    can->Status = p.statusHepMC();
+    can->Charge = p.charge();
+    can->Mass = p.m();
+
+    can->Momentum.SetPxPyPzE
+      (p.px(), p.py(), p.pz(), p.e());
+    
+    ary->Add(can);
+  }
+}
+
+int main(int argc, char** argv) {
+
+
+  cout<<"Usage: -m (ss, qq) -n (nevent = 100) -o (output.txt) -minpt (200)  -met (0) -phimass (default=0.5) -alpha (dark FSR coupling = 0.1) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off)"<<endl;
+
+  //get cmd options
+  CmdLine cmdline(argc, argv);
+  
+  string mode = cmdline.value<string>("-m", "ss");
+  double minpt = cmdline.value<double>("-minpt", 0);
+  double minpt1 = cmdline.value<double>("-minpt1", -1);
+  double minpt2 = cmdline.value<double>("-minpt2", -1);
+
+  double minmet = cmdline.value<double>("-met", 0);
+
+  string output = cmdline.value<string>("-o", "output");
+
+  bool rehad = cmdline.present("-rehad");
+
+  //initialize random numbers
+  ran.SetSeed(cmdline.value<int>("-seed", 0));
+
+  ofstream file;
+  ofstream file_evt[4];
+  double jet_def_R[4]={0.0, 1.1, 1.5, 2.0};
+  const int n_rad=4;
+
+  string input;
+  if (mode == "lhe")
+    input = cmdline.value<string>("-i");
+
+  try{
+    file.open((output + ".jet").c_str());
+    //store event info
+    file_evt[0].open((output + "_1.evt").c_str());
+    file_evt[1].open((output + "_2.evt").c_str());
+    file_evt[2].open((output + "_3.evt").c_str());
+    file_evt[3].open((output + "_4.evt").c_str());
+    //file_evt[4].open((output + "_5.evt").c_str());
+
+  }
+  catch(...){
+    cerr<<"ERROR: cannot open "<<output<<", exiting..."<<endl;
+    return 1;
+  }
+
+
+  int nEvent = cmdline.value<int>("-n", 100);
+  int nAbort = 5;
+
+  // Pythia generator.
+  Pythia pythia;
+
+  // Initialization for LHC.
+  pythia.readString("Beams:eCM = " + 
+		    to_st(cmdline.value<int>("-ECM", 14000)));
+
+  bool m_lhe = false;
+
+  //check for verbose mode
+  if(!cmdline.present("-v"))
+    pythia.readString("Print:quiet = on");
+
+  double mZ = cmdline.value<double>("-mZ", 1000);
+  //hidden scalar production
+  if (mode == "ss")
+    init_hidden(pythia,
+		cmdline.value<double>("-phimass", 10.0),
+		cmdline.value<double>("-frag", 0.8),
+		cmdline.value<double>("-alpha", 0.1),
+		mZ,
+		cmdline.value<double>("-inv", 0.3),
+		cmdline.present("-run")
+		);
+  else if (mode == "susy")
+    init_susy(pythia, mode);
+
+  else if (mode == "Zqcd")
+    init_Zqcd(pythia, mode, mZ);
+  
+  else if(mode == "qcd" ||
+	  mode == "qq" || 
+	  mode == "gq" ||
+	  mode == "qg" ||
+	  mode == "gg" ) 
+    init_qcd(pythia, mode);
+
+  else if(mode == "bb") 
+    init_bbbar(pythia, mode);
+
+  else if(mode == "lhe"){
+    //read lhe file
+    m_lhe=true;
+    
+    CombineMatchingInput combined;
+    UserHooks* matching = combined.getHook(pythia);
+    if (!matching) return 1;
+    pythia.setUserHooksPtr(matching);
+
+
+    pythia.readString("Beams:frameType = 4");
+    pythia.readString("Beams:LHEF = "+input);
+
+    pythia.readString("JetMatching:merge = on");
+    pythia.readString("JetMatching:scheme = 1");
+    pythia.readString("JetMatching:doShowerKt = on");
+    pythia.readString("JetMatching:setMad = on");
+    /*
+    pythia.readString("JetMatching:qCut = 30.0000");
+    pythia.readString("JetMatching:coneRadius = 1.0");
+    pythia.readString("JetMatching:etaJetMax = 10.0");
+    pythia.readString("JetMatching:nJetMax = 3");
+    */
+
+    /*    
+    //pythia.readString("JetMatching:nJet = 2");
+    //pythia.readString("JetMatching:doMerge = 1");
+    pythia.readString("JetMatching:nQmatch = 5");
+
+    pythia.readString("JetMatching:jetAlgorithm = 2");
+    pythia.readString("JetMatching:slowJetPower = -1");
+    pythia.readString("JetMatching:nQmatch = 5");
+    */
+
+    
+    if (cmdline.present("-inclusive")){
+      cout<<"Inclusive mode, more jets allowed"<<endl;
+      pythia.readString("JetMatching:exclusive = 0");
+    }
+
+    else {
+      cout<<"Exclusive mode, all jets must match"<<endl;
+      pythia.readString("JetMatching:exclusive = 1");
+    }
+    cout<<"input: "<<"Beams:LHEF = "+input<<endl;
+    
+  }
+    
+
+  else{
+    cerr<<"ERROR: mode: "<<mode
+	<<" not supported, exiting..."<<endl;
+    return 1;
+  }
+    
+  if(minpt1 > 0)
+    cout<<"INFO: leading jet pt cut enabled: "<<minpt1<<endl;
+  if(minpt2 > 0)
+    cout<<"INFO: second jet pt cut enabled: "<<minpt2<<endl;
+
+  
+  if(!m_lhe){
+    
+    if (!cmdline.present("-partonpt"))
+      pythia.readString(add_st("PhaseSpace:pTHatMin = ", minpt));
+    else{
+      cout<<"INFO: parton pt cut different: "
+	  <<cmdline.value<double>("-partonpt")<<endl;
+      pythia.readString(add_st("PhaseSpace:pTHatMin = ", 
+			       cmdline.value<double>("-partonpt")));
+    }
+  }
+    
+
+  //set seed
+  pythia.readString("Random:setSeed = on");
+  // fix random seed
+  pythia.readString("Random:seed = "+
+		    int_st(cmdline.value<int>("-seed", 0))
+		    );
+
+  //rehadronization turned on
+  if(rehad)
+    pythia.readString("HadronLevel:all = off");
+
+  
+  //initialize pythia
+  pythia.init();
+  
+  cout<<"INFO: pT cut: "<<minpt<<endl;
+  cout<<"INFO: MEt cut: "<<minmet<<endl;
+
+  // Begin event loop.
+  int iAbort = 0;
+
+  //access to pythia event
+  Pythia8::Event& event = pythia.event;
+  Pythia8::Event saved_event;
+
+  
+  //output format:
+  //constit = if it is part of a jet
+  file<<"type, event, jet, pt, mass, eta, phi, " 
+    //new observables
+      <<"charge, dipole, tripole, corr21, corr32, "
+      <<"multi, charge_ratio, tau1, tau2, tau3"<<endl;
+
+  //type = 1 for jet entry
+  //type = 2 for constituents
+
+  //event level variable
+  for(int i=0; i<n_rad; i++)
+    file_evt[i]<<"event, jet_narrow, jet, met, met_phi, dphi, "
+	       <<"eta_max, deta, drap,"
+	       <<"HT, MJ, Mjj, MT, Mcol, Mmc"<<endl;
+
+  int iEvent = 0;
+  int iTotal = 0;
+
+  //start timer
+  Timer mytime(nEvent);
+
+  // Declare Delphes variables
+  ExRootConfReader *config = new ExRootConfReader();
+  config->ReadFile("delphes_card_CMS.tcl");
+  Delphes *delphes = new Delphes("Delphes"); 
+  delphes -> SetConfReader(config);
+  DelphesFactory *factory = delphes->GetFactory();
+
+  TObjArray* stable = 
+    delphes->ExportArray("stableParticles");
+
+  //start root application mode
+  gROOT->SetBatch();
+  int appargc = 1;
+  char appName[] = "Delphes";
+  char *appargv[] = {appName};
+  TApplication app(appName, &appargc, appargv);
+
+  //initialize delphes
+  delphes->InitTask();
+
+  //events to print
+  int evt_print = 20;
+
+  while ( (!m_lhe && (iEvent < nEvent))  ||
+	  (m_lhe && (iTotal < nEvent))
+	  ) {
+
+    //clear delphes
+    delphes->Clear();
+
+    //if rehadronization is turned on
+    if(rehad) {
+      
+      //renew an event
+      if (iTotal % 5 == 0) {
+	while (!pythia.next()) {
+	  if (++iAbort < nAbort) continue;
+	  
+	  cerr << "ERROR: Event generation aborted prematurely,"
+	       << "owing to error!" << endl;
+	  break;
+	}
+	
+	saved_event = pythia.event;
+      }
+
+      else {
+	pythia.event = saved_event;
+      }
+      
+      //run hadronization
+      pythia.forceHadronLevel();
+    }
+
+    else{
+      while (!pythia.next()) {
+	if (++iAbort < nAbort) continue;
+	cerr << "ERROR: Event generation aborted prematurely,"
+	     << "owing to error!" << endl;
+	break;
+      }
+    }
+
+    if(m_lhe && pythia.info.atEndOfFile())
+      break;
+
+    
+    ++iTotal;
+
+    //now process through Delphes
+    Pythia_to_Delphes(factory, stable, event);
+    
+    //run delphes code
+    delphes->ProcessTask();
+
+    Candidate *can;
+
+    const TObjArray* vMEt = delphes->ImportArray
+      ("MissingET/momentum");
+    
+    can = (Candidate*) TIter(vMEt).Next() ;
+
+    //Missing ET pointer must exist
+    if(can == NULL){
+      cout<<"ERROR: MET pointer not found!"<<endl;
+      continue;
+    }
+
+    //if met is too small, continue
+    if(can->Momentum.Pt() < minmet){
+      continue;
+      
+    }
+
+    PseudoJet MEt(-can->Momentum.Px(),
+		  -can->Momentum.Py(), 0,
+		  can->Momentum.Pt());    
+        
+    //now grab the jets
+    const TObjArray* vjets = delphes->ImportArray
+      ("FastJetFinder/jets");
+
+    //demand at least two jets above pt cut
+    int njet = cmdline.value<int>("-njet", 2);
+
+    if(vjets->GetEntriesFast() < njet)
+      continue;
+
+    vector<PseudoJet> selected_jets, reclustered_jets;
+    vector<int> njet_list;
+
+    for(int i=0; i<vjets->GetEntriesFast(); i++){
+      
+      Candidate* cjet = (Candidate*) vjets->At(i);
+
+      
+      if(fabs(cjet->Momentum.Eta())>3.0)
+	continue;
+      
+
+      PseudoJet cjet_v(cjet->Momentum.Px(), 
+		       cjet->Momentum.Py(),
+		       cjet->Momentum.Pz(),
+		       cjet->Momentum.E());
+
+      selected_jets.push_back(cjet_v);
+      njet_list.push_back(selected_jets.size());
+    }
+
+    if(selected_jets.size() < njet)
+      continue;
+
+    if(selected_jets[1].pt() < minpt)
+      continue;
+       
+    if(minpt1 > 0 && 
+       selected_jets[0].pt() < minpt1)
+      continue;
+
+    if(minpt2 > 0 && 
+       selected_jets[1].pt() < minpt2)
+      continue;
+    
+    //get the HT
+    const TObjArray* vHT = delphes->ImportArray
+      ("ScalarHT/energy");
+    
+    can = (Candidate*) TIter(vHT).Next() ;
+
+    //Missing ET pointer must exist
+    if(can == NULL){
+      cout<<"ERROR: HT pointer not found!"<<endl;
+      continue;
+    }
+
+    double HT = can->Momentum.M();  
+    
+    
+    for(int i=0; i<vjets->GetEntriesFast(); ++i)
+      {
+	
+	Candidate* cjet = (Candidate*) vjets->At(i);
+	  
+	PseudoJet cjet_v(cjet->Momentum.Px(), 
+			 cjet->Momentum.Py(),
+			 cjet->Momentum.Pz(),
+			 cjet->Momentum.E());
+	
+	//only output the first 100 events
+	if(iEvent < evt_print)
+	  file << print_jet(cjet,
+			    iEvent+1, njet_list[i]);      
+      }
+    
+
+    //now grab the invisible guys
+    vector<PseudoJet> unjet_input;
+    PseudoJet all_inv;
+    
+    //loop over particles
+    for (int i=0; i<event.size(); ++i){
+      Particle& p = event[i];
+
+      //only get invisible pions
+      if(p.id()!=4900211) continue;
+
+
+      //we expect the next particle to be an anti-pion
+      //if not, there is an error!
+      if(i+1 >= event.size() || 
+	 event[i+1].id() != -4900211)
+	{
+	  cout<<"ERROR: invisible pions not coming in pairs!"
+	      <<endl;
+	  continue;
+	}
+      
+      Particle& p_next = event[i+1];
+
+      unjet_input.push_back( PseudoJet
+			     ( p.px() + p_next.px(),
+			       p.py() + p_next.py(),
+			       p.pz() + p_next.pz(),
+			       p.e() + p_next.e() ) );
+      
+      all_inv += unjet_input.back();
+
+      charge(unjet_input.back(), 0);
+    }
+
+
+
+    //recluster the jets
+    //for 4 different radius
+    for(int i=0; i<n_rad; i++){
+
+      //initialize jet algorithm
+      //for invisible jets
+      vector<PseudoJet>& reclustered_jets = selected_jets;
+      
+      if (jet_def_R[i]>0){
+
+      JetDefinition jet_def(cambridge_algorithm, jet_def_R[i]);
+
+      ClusterSequence cs(selected_jets, jet_def);
+    
+      reclustered_jets = 
+	sorted_by_pt(cs.inclusive_jets());
+      }
+      
+      double Mjj = -1;
+      double Mt = -1;
+      double Mc = -1;
+      double deta = 999;
+      double drap = 999;
+      double eta_max = 999;
+
+      if(reclustered_jets.size() >= 2) {
+	
+	Mjj = 
+	  (reclustered_jets[0] + reclustered_jets[1]).m();
+	
+	Mc = Mcol(MEt, reclustered_jets[0], reclustered_jets[1]);
+
+	Mt = MT(MEt, reclustered_jets[0], reclustered_jets[1]);
+
+	deta = fabs(reclustered_jets[0].eta()-reclustered_jets[1].eta());
+
+	drap = fabs(reclustered_jets[0].rap()-reclustered_jets[1].rap());
+
+	eta_max = max(fabs(reclustered_jets[0].rap()),
+		      fabs(reclustered_jets[1].rap()));
+      }
+    //print event statistics
+    //format = event number, number of jets
+    file_evt[i]<<iEvent+1<<","<<vjets->GetEntriesFast()<<","
+	       <<reclustered_jets.size()<<","
+	       <<MEt.pt()<<","
+	       <<MEt.phi()<<","
+	       <<dphi(MEt, selected_jets)<<","
+	       <<eta_max<<","
+	       <<deta<<","
+	       <<drap<<","
+	       <<HT<<","
+	       <<MJ(reclustered_jets)<<","
+	       <<Mjj<<","
+	       <<Mt<<","
+	       <<Mc<<",";
+
+    file_evt[i]<<(all_inv + 
+		  reclustered_jets[0] +
+		  reclustered_jets[1]).m()<<endl;
+    
+    
+    }
+    
+    //print the individual invisible guys
+    if(iEvent < 100)
+      for (int j=0; j<unjet_input.size(); ++j){
+	file << print_constit(unjet_input[j], iEvent+1, -1);  
+      }
+
+    //new event
+    if(iEvent < evt_print)
+      file <<"#"<<endl;
+    
+    ++iEvent;
+    
+    if(!m_lhe && (iEvent %10 ==0)){
+      
+      mytime.update(iEvent);
+      
+      cout<<mytime;
+    }
+
+    else if(m_lhe && (iTotal %10 ==0)){
+      
+      mytime.update(iTotal);
+      
+      cout<<mytime;
+    }
+    
+    
+  }
+
+  if(!m_lhe)
+    mytime.update(iEvent);
+
+  else
+    mytime.update(iTotal);
+    
+  cout<<mytime<<endl;
+
+  cout<<iEvent<<" total events"<<endl;
+
+  for(int i=0; i<n_rad; ++i){
+    file_evt[i]<<"# total event = "<<iTotal<<endl;
+    file_evt[i]<<"# pass event = "<<iEvent<<endl;
+    file_evt[i]<<"# minpt = "<<minpt<<endl;
+    file_evt[i]<<"# trigger efficiency = "<<iEvent/double(iTotal)<<endl;
+    file_evt[i]<<"# cxn = "<<pythia.info.sigmaGen()*1e9<<endl;
+    file_evt[i]<<"# cxn_err = "<<pythia.info.sigmaErr()*1e9<<endl;
+  }
+
+  //clean up
+  delphes->FinishTask();
+  delete delphes;
+  delete config;
+  
+  if(cmdline.present("-v"))
+    pythia.stat();
+  
+  // Done.
+  for(int i=0; i<n_rad; ++i){
+    file_evt[i].close();
+  }
+  file.close();
+  return 0;
+}

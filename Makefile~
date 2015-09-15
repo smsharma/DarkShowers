@@ -1,0 +1,43 @@
+CC=g++
+#wildcard, this finds all *.c file and make *.o files
+objects = $(patsubst %.c,%.o,$(wildcard *.c))
+
+PYTHIA8=/home/timlou/research/pythia8185
+HEPMC=/home/timlou/research/HepMC
+fastjet=/home/timlou/research/fastjet
+
+# make sure root-config is defined
+DELPHES_DIR := /home/timlou/research/Delphes-3.1.2
+
+ROOTFLAGS := `root-config --cflags` 
+ROOTLIBS := -L`root-config --libdir` -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -pthread -lm -ldl -rdynamic
+
+#include delphes exroot
+INC := -I$(DELPHES_DIR) -I$(DELPHES_DIR)/classes -I$(DELPHES_DIR)/external
+LIB := -L$(DELPHES_DIR) -lDelphes -Wl,-rpath $(DELPHES_DIR)
+
+all: jets_Higgs_Delphes
+
+#rule for basic objects
+%.o: %.cc %.hh
+	$(CXX) -Wall -O3 -c $< \
+	-I$(PYTHIA8)/include \
+	-L$(PYTHIA8)/lib/archive -lpythia8 -llhapdfdummy \
+	-o $@
+
+to_bin : $(objects) to_bin.C
+	$(CXX) -g CmdLine/CmdLine.o to_bin.C \
+	-o bin/to_bin.exe
+	ln -sf bin/to_bin.exe
+
+
+jets_simple: $(objects) jets_simple.C Zprime_hidden.o gluonportal.o
+	$(CXX) -O3 $(objects) CmdLine/CmdLine.o Zprime_hidden.o gluonportal.o jets_simple.C \
+	$(ROOTFLAGS) $(INC) \
+	-I$(PYTHIA8)/include -I$(PYTHIA8)/examples \
+	$(ROOTLIBS) $(LIB) \
+	-L$(PYTHIA8)/lib/archive -L$(PYTHIA8)/lib -lpythia8 -llhapdfdummy \
+	-Wl,-rpath,$(DELPHES_DIR) \
+	-o bin/jets_simple.exe
+	ln -sf bin/jets_simple.exe
+

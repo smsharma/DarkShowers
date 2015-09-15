@@ -1,3 +1,8 @@
+# Event products
+*.evt
+*.obj
+*.meta
+
 # Compiled Object files
 *.slo
 *.lo

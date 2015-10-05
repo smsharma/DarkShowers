@@ -1,3 +1,7 @@
+// Tim Lou
+// 10/04/2015
+
+// c++ tools
 #include <cstring>
 #include <sstream>
 #include <fstream>
@@ -21,87 +25,45 @@
 #include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
 
+//fastjet??
+//duplicates in delphes
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/Selector.hh"
 #include "fastjet/contribs/Nsubjettiness/Nsubjettiness.hh"
 
 #include "Pythia8/Pythia.h"
-#include "CombineMatchingInput.h"
+//matching not implemented yet
+//#include "CombineMatchingInput.h"
 
+//Pythia8 library to perform t-channel production
 #include "tchannel_hidden.hh"
-#include "gluonportal.hh"
+
+//Pythia8 library to perform higher dimensional ops
+//dim-7 GG-chichi production
+//#include "gluonportal.hh"
 
 #include "CmdLine/CmdLine.hh"
+
+//extra tools, to be simplified
 #include "tools.h"
+
+//to simplify code
+//moving all unnecessary functions to this file
+#include "pythia_functions.h"
 
 //using namespace Pythia8;
 using namespace fastjet;
 using namespace fastjet::contrib;
 using namespace std;  
 
-// Derived class for pt cutting
 
-class ParticlePTCut: public UserHooks {
-
-public:
-
-  double ptcut;
-  int id;
-  PseudoJet h;
-
-  ParticlePTCut(double ptcut, int id=25): 
-    ptcut(ptcut), id(id) {}
-
-  virtual bool canVetoProcessLevel()
-  {
-    return true;
-  }
-
-  virtual bool doVetoProcessLevel(Pythia8::Event& evt)
-  {
-    for(int i = 0; i < evt.size(); ++i){
-      Pythia8::Particle& p = evt[i];
-
-      if(p.id()!= id)
-        continue;
-   
-      h = PseudoJet(p.px(), p.py(), p.pz(), p.e());
- 
-      if (p.pT() < ptcut)
-        return true;
-    }
-    return false;
-  }
-
-};
-
-void init_qcd(Pythia& pythia, string mode)
-{
-
-  pythia.readString("HardQCD:all = off");
-
-  if (mode == "qcd" || mode == "gg"){
-    pythia.readString("HardQCD:gg2gg = on");
-    pythia.readString("HardQCD:qqbar2gg = on");
-  }
-
-  if (mode == "qcd" || mode == "qq"){
-    pythia.readString("HardQCD:gg2qqbar = on");
-    pythia.readString("HardQCD:qq2qq = on");
-    pythia.readString("HardQCD:qqbar2qqbarNew = on");
-  }
-
-  if (mode == "qcd" || mode == "gq" || mode == "qg"){
-    pythia.readString("HardQCD:qg2qg = on");    
-  }
-  
-  cout<<"INFO: pp -> "<<mode<<" enabled "<<endl;
-}
-
+//initialize t_channel processes
 void init_tchannel(Pythia& pythia,
-  double m_chi_tilde=1000.)
+		   double m_chi_tilde=1000.)
 {
   Sigma2Process* myprocess = new HiddenTChannel(4900101, 666,0.01,m_chi_tilde);
+
+  // apply a phase-space cut to speed up MC generation
   pythia.readString("PhaseSpace:pTHatMin =  1000");
   pythia.setSigmaPtr(myprocess);     
 }
@@ -119,7 +81,6 @@ void init_hidden(Pythia& pythia,
   if(run){
     pythia.readString("HiddenValley:Run = on");
     pythia.readString(add_strings("HiddenValley:Lambda = ", alpha));
-    
     cout<<"running enabled, alpha(1TeV) is: "<<alpha<<endl;
   }
     pythia.readString("4900001:m0 = 5000");
@@ -197,55 +158,13 @@ void init_hidden(Pythia& pythia,
 		      + to_st(inv)
 		      + " 0 4900211 -4900211");
 
-/*
-
-    
-    double mtau = 1.777;
-    double mb = 4.2;
-    double mc = 1.3;
-
-    double G_tau = mtau*mtau*sqrt(mass*mass - 4*mtau*mtau);
-    double G_b = 3*mb*mb*sqrt(mass*mass - 4*mb*mb);
-    double G_c = 3*mc*mc*sqrt(mass*mass - 4*mc*mc);
-
-
-    double br_tau = (1-inv)*G_tau/(G_tau + G_b + G_c);
-    double br_b = (1-inv)*G_b/(G_tau + G_b + G_c);
-    double br_c = (1-inv)*G_c/(G_tau + G_b + G_c);
-
-    cout<<"INFO: br: (bb, tau tau, cc, inv): ("
-  <<br_b<<", "<<br_c<<", "<<br_tau
-  <<", "<<inv<< ")"<<endl;
-    
-    // pythia.readString("4900111:onechannel = 1 " 
-    //       + to_st(1-inv)
-    //       + " 91 21 21");    
-
-    pythia.readString("4900111:onechannel = 1 " 
-          + to_st(br_b)
-          + " 91 -5 5");   
-
-    pythia.readString("4900111:addchannel = 1 " 
-          + to_st(br_c)
-          + " 91 -4 4");
-
-    pythia.readString("4900111:addchannel = 1 " 
-          + to_st(br_tau)
-          + " 0 -15 15");
-
-    pythia.readString("4900111:addchannel = 1 " 
-          + to_st(inv)
-          + " 0 4900211 -4900211");
-*/
-
-
     pythia.readString("4900113:onechannel = 1 1 92 21 21 21");
 
     pythia.readString("4900113:onechannel = 1 1 92 21 21 21");
 
     //disable spin 1 mesons
     pythia.readString
-      (add_strings("HiddenValley:probVector = ", 0.0));
+      (add_strings("HiddenValley:probVector = ", 0.75));
 
     //change FSR strength
     pythia.readString
@@ -253,44 +172,15 @@ void init_hidden(Pythia& pythia,
 }
 
 
-// Function to input all particles to Delphes
-
-void Pythia_to_Delphes(DelphesFactory* factory, 
-		       TObjArray* ary,
-		       Pythia8::Event& evt,
-		       vector<PseudoJet>* muons=NULL){
-
-  // Loop over particles
-
-  for(int i=0; i<evt.size(); ++i){
-    Pythia8::Particle& p = evt[i];
-
-    
-    if(!p.isVisible() || (p.statusHepMC()) != 1)
-	    continue;
-    
-    Candidate* can = factory->NewCandidate();
-    can->PID = p.id();
-    can->Status = p.statusHepMC();
-    can->Charge = p.charge();
-    can->Mass = p.m();
-
-    can->Momentum.SetPxPyPzE
-      (p.px(), p.py(), p.pz(), p.e());
-    
-    ary->Add(can);
-  }
-}
-
 int main(int argc, char** argv) {
 
   cout<<"Usage: -m (mode -- source) -n (nevent = 100) -o (output.txt) -pt_min (200)  -met_min (0) -phimass (default=0.5) -alpha (dark FSR coupling) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off)"<<endl;
 
-  // Get cmd options
-
+  
+  //parse input strings
   CmdLine cmdline(argc, argv);
   
-  string mode = cmdline.value<string>("-m", "boosted_higgs");
+  string mode = cmdline.value<string>("-m", "t-channel");
   double pt_min = cmdline.value<double>("-ptmin", 100);
   double met_min = cmdline.value<double>("-metmin", 0);
   double met_max = cmdline.value<double>("-metmax", 99999);
@@ -301,15 +191,14 @@ int main(int argc, char** argv) {
   bool rehad = cmdline.present("-rehad");
 
   // Initialize random numbers
-
   ran.SetSeed(cmdline.value<int>("-seed", 0));
 
   // Instantiate event-wide, object and info files
-
   ofstream file_evt;
   ofstream file_obj;
   ofstream file_meta;
   string input;
+
   if (mode == "lhe")
     input = cmdline.value<string>("-i");  
 

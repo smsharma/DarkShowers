@@ -17,6 +17,20 @@ CXX:=g++
 objects := $(patsubst %.c,%.o,$(wildcard *.c))
 
 ################################################################################
+# Set user
+################################################################################
+
+ifeq ($(USER),tim)
+PYTHIA_DIR:=/home/timlou/research/pythia8209
+DELPHES_DIR:=/home/timlou/research/Delphes-3.1.2
+endif
+
+ifeq ($(USER),sid)
+PYTHIA_DIR:=/Users/siddharth/pythia8205
+DELPHES_DIR:=/Users/siddharth/Delphes-3.2.0
+endif
+
+################################################################################
 # DIRECTORIES: Pythia, ROOT, Delphes
 ################################################################################
 

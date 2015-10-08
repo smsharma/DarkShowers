@@ -35,8 +35,6 @@ endif
 ################################################################################
 
 # Pythia directories
-PYTHIA_DIR:=./pythia8
-
 PYTHIA_BIN:=$(PYTHIA_DIR)/bin
 PYTHIA_INCLUDE:=$(PYTHIA_DIR)/include
 PYTHIA_LIB:=$(PYTHIA_DIR)/lib
@@ -48,9 +46,14 @@ ROOT_LIB := -L`root-config --libdir` -lCore -lCint -lRIO -lNet -lHist -lGraf -lG
 ROOT_INC := /usr/local/include/root/
 
 # Delphes directories
-DELPHES_DIR := ./delphes3
 DELPHES_INC := -I$(DELPHES_DIR) -I$(DELPHES_DIR)/classes -I$(DELPHES_DIR)/external  -I$(ROOT_INC)  -I/usr/local/include/Pythia8Plugins/
+ifeq ($(USER),sid)
+DELPHES_LIB := -L$(DELPHES_DIR) -lDelphes -Wl,-rpath $(DELPHES_DIR)
+endif
+
+ifeq ($(USER),tim)
 DELPHES_LIB := -L$(DELPHES_DIR) -lDelphes
+endif
 
 ################################################################################
 # RULES: Definition of the rules used to build the PYTHIA examples.

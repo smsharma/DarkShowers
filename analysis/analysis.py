@@ -2,7 +2,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from matplotlib import rc
+from matplotlib import rcParams
 import os, sys
 
 
@@ -93,12 +93,69 @@ class Cuts:
     # forget all cuts
     def clear(self): self._cuts = []
 
-# class Plots:
-#     def __init__(self):
-#         self._cuts = []
+class Plots:
+    def __init__(self):
+        # rcParams for plots 
+        rcParams['text.usetex']=False
+        rcParams['xtick.labelsize'] = 16
+        rcParams['ytick.labelsize'] = 16
+        rcParams['axes.labelsize']=18
+        rcParams['axes.titlesize']=18
+        rcParams['font.family']='serif'
+        rcParams['font.serif']='CMU Serif'
 
-#     def histogram_all(self):
-#     def histogram_some(self):
-#     def event_display(self):
-#     def histogram_all(self):
-#     def histogram_all(self):
+    def hist_all(self,sig,bkgs,bkg_labels,*args,**kwargs):
+        n_vars = len(sig.data.columns.values)
+        n_cols = 2
+        n_rows = np.int(np.ceil(n_vars/n_cols))
+        fig, axs = plt.subplots(n_rows,n_cols)
+        rcParams['figure.figsize'] = 14., 5*n_rows
+        
+        n_var = 0
+
+        for i in range(n_rows):
+            for j in range(n_cols):
+                if n_var >= n_vars: continue
+                var = sig.data.columns.values[n_var]
+                binning = np.linspace(np.min(sig.data[var]),np.max(sig.data[var]),25)
+                for bkg,bkg_label in zip(bkgs,bkg_labels):
+                    axs[i][j].hist([list(bkg.data[var])], bins=binning, stacked=True,color="green", weights=[bkg.w],
+                             log=True,
+                             alpha=0.4, lw=0, label=bkg_label,*args,**kwargs)
+                axs[i][j].hist(list(sig.data[var]), bins=binning, color="red", weights=sig.w,
+                         alpha=1.0, lw=1.5, label=r"${\rm Signal}$",histtype="step",linestyle="dashed",log=True,*args,**kwargs)
+                axs[i][j].set_xlabel(var, labelpad=10)
+                axs[i][j].legend(loc='best', fancybox=True, framealpha=0.5)
+                n_var+=1
+
+    def hist_some(self,vars, sig,bkgs,bkg_labels,*args,**kwargs):
+        n_vars = len(vars)
+        n_cols = 2
+        n_rows = np.int(np.ceil(n_vars/n_cols))
+        fig, axs = plt.subplots(n_rows,n_cols)
+        rcParams['figure.figsize'] = 14., 5*n_rows
+        
+        n_var = 0
+
+        for i in range(n_rows):
+            for j in range(n_cols):
+                if n_var >= n_vars: continue
+                var = vars[n_var]
+                binning = np.linspace(np.min(sig.data[var]),np.max(sig.data[var]),25)
+                for bkg,bkg_label in zip(bkgs,bkg_labels):
+                    axs[i][j].hist([list(bkg.data[var])], bins=binning, stacked=True,color="green", weights=[bkg.w],
+                             log=True,
+                             alpha=0.4, lw=0, label=bkg_label,*args,**kwargs)
+                axs[i][j].hist(list(sig.data[var]), bins=binning, color="red", weights=sig.w,
+                         alpha=1.0, lw=1.5, label=r"${\rm Signal}$",histtype="step",linestyle="dashed",log=True,*args,**kwargs)
+                axs[i][j].set_xlabel(var, labelpad=10)
+                axs[i][j].legend(loc='best', fancybox=True, framealpha=0.5)
+                n_var+=1
+
+    def hist_var(self,var,sig,bkgs,bkg_labels,*args,**kwargs):
+        binning = np.linspace(np.min(sig.data[var]),np.max(sig.data[var]),25)
+        for bkg,bkg_label in zip(bkgs,bkg_labels):
+            plt.hist([list(bkg.data[var])], bins=binning, stacked=True,color="green", weights=[bkg.w], log=True, alpha=0.4, lw=0, label=bkg_label,*args,**kwargs)
+        plt.hist(list(sig.data[var]), bins=binning, color="red", weights=sig.w, alpha=1.0, lw=1.5, label=r"${\rm Signal}$",histtype="step",linestyle="dashed",log=True,*args,**kwargs)
+        plt.xlabel(var, labelpad=10)
+        plt.legend(loc='best', fancybox=True, framealpha=0.5)

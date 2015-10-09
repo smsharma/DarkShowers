@@ -159,3 +159,41 @@ class Plots:
         plt.hist(list(sig.data[var]), bins=binning, color="red", weights=sig.w, alpha=1.0, lw=1.5, label=r"${\rm Signal}$",histtype="step",linestyle="dashed",log=True,*args,**kwargs)
         plt.xlabel(var, labelpad=10)
         plt.legend(loc='best', fancybox=True, framealpha=0.5)
+
+    def event_display(self, dat, n_events=16):
+        uq=[]
+        for i in dat.obj.xs(('vis'),level=('type')).index.values:
+            uq.append(i[0])
+        uq=np.unique(uq)
+
+        plt.rcParams['figure.figsize'] = 14, 14 
+        plt.rcParams['axes.labelsize'] = 16
+        plt.rcParams['font.size'] = 16
+
+        fig, axs = plt.subplots(int(np.sqrt(n_events)),int(np.sqrt(n_events)))
+
+        i_events=0;
+        for i in range(int(np.sqrt(n_events))):
+            for j in range(int(np.sqrt(n_events))):
+            
+                vislist=dat.obj.xs((uq[i_events],'vis'),level=('evt','type'))
+                invislist=dat.obj.xs((uq[i_events],'invis'),level=('evt','type'))
+                muonlist=dat.obj.xs((uq[i_events],'muon'),level=('evt','type'))
+                jetlist=dat.obj.xs((uq[i_events],'jet'),level=('evt','type'))
+
+                axs[i][j].scatter(vislist['eta'], vislist['phi'], s=10*vislist['pt'], c=[1,0,0],alpha=0.5)
+                axs[i][j].scatter(invislist['eta'], invislist['phi'], s=10*invislist['pt'], c=[0,0,0], alpha=0.5)
+                axs[i][j].scatter(muonlist['eta'], muonlist['phi'], s=10*muonlist['pt'], c=[0,0,1],alpha=0.5, marker='$\mu$' )
+                axs[i][j].scatter(jetlist['eta'], jetlist['phi'], s=10*jetlist['pt'], c=[0,1,0],alpha=0.5, marker='$j$' )
+
+                axs[i][j].set_xlabel('$\eta$')
+                axs[i][j].set_ylabel('$\phi$')
+
+                axs[i][j].set_xlim(-5,  5)
+                axs[i][j].set_ylim(0, 2*np.pi)
+         
+                
+                i_events+=1;
+                
+        plt.tight_layout()
+        plt.show()

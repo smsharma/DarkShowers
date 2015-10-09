@@ -7,6 +7,9 @@ import os, sys
 
 
 class Data:
+    """
+    Class to store data contents (event, object and run variables) and do simple cuts etc
+    """
     def __init__(self, input, display=True, lumi=20*1000, load_data=True):
         if load_data:
             if os.path.exists(input+".evt"): self.data_ = pd.read_csv(input+".evt", sep=',',skipinitialspace=True, comment="#", index_col=('evt') ) 
@@ -18,6 +21,7 @@ class Data:
         self.obj = self.obj_
         self.w =np.repeat(self.w_, len(self.data.index))
         self.cuts = Cuts()
+        self.lumi = lumi
         
     def select(self, cuts):
         query = ''
@@ -31,25 +35,34 @@ class Data:
         self.obj = self.obj_.loc[evt_list]
         self.w =np.repeat(self.w_, len(self.data.index))
         self.cuts = cuts
+
+    def eff(self):
+        return len(self.data)/np.float(len(self.data_))
+
+    def n_evts(self, L=1):
+        pb = 1;
+        ab = 10**-6*pb;
+        return self.meta['cxn'][0]*pb*(1/ab)*self.eff()
         
     def get_obj(self, type, n=1):
         return self.obj.xs((type, n), level=('type','n'))
 
-    def convert(self,pt, mass, eta, phi):
+    def etaphi_to_xyz(self,pt, mass, eta, phi):
         e = sqrt( (pt*cosh(eta))**2 + mass**2 )
         px = pt*cos(phi)
         py = pt*sin(phi)
         pz = pt*sinh(eta)
-    
-        return np.asarray([px,py,pz,e]).T
+        return e, px, py, pz
 
     def dR(self,dphi, deta=0):
         dphi = abs(dphi % (2*pi))
         dphi = dphi if dphi < pi else dphi-pi
         return sqrt(dphi**2 + deta**2)
 
-# a class to keep track of cuts
 class Cuts:
+    """
+    Class to keep track of cuts
+    """
     def __init__(self):
         self._cuts = []
         
@@ -94,6 +107,9 @@ class Cuts:
     def clear(self): self._cuts = []
 
 class Plots:
+    """
+    Class to plot histograms and event displays
+    """
     def __init__(self):
         # rcParams for plots 
         rcParams['text.usetex']=False
@@ -192,7 +208,6 @@ class Plots:
                 axs[i][j].set_xlim(-5,  5)
                 axs[i][j].set_ylim(0, 2*np.pi)
          
-                
                 i_events+=1;
                 
         plt.tight_layout()

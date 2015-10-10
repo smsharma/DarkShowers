@@ -90,6 +90,6 @@ jets_simple: $(objects) jets_simple.C tchannel_hidden.o gluonportal.o
 	$(ROOT_LIB) $(DELPHES_LIB) \
 	-L$(PYTHIA_DIR)/lib -lpythia8 \
 	-Wl,-rpath,$(DELPHES_DIR) \
-	-o bin/jets_simple.exe
-	ln -sf bin/jets_simple.exe
+	-o jets_simple.exe
+	ln -sf jets_simple.exe
 endif

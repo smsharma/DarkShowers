@@ -52,6 +52,8 @@ void init_hidden(Pythia& pythia,
 		 )
 {
   
+  pythia.readString("HiddenValley:Ngauge  = 2");
+
   if(run){
     pythia.readString("HiddenValley:Run = on");
     pythia.readString(add_st
@@ -147,8 +149,8 @@ void init_hidden(Pythia& pythia,
   //due to helicity suppression
   //ignore light flavor
   pythia.readString("4900111:onechannel = 1 " 
-		    + to_st((1-inv))
-		    + "91 -3 3");
+		    + to_st(1.0-inv)
+		    + " 91 -3 3");
 
   //invisible ratio
   //proportion ~inv of the time 
@@ -157,10 +159,9 @@ void init_hidden(Pythia& pythia,
 		    + to_st(inv)
 		    + " 0 4900211 -4900211");
 
-  
   //spin 1 meson decay
   //democratic to all flavors
-  pythia.readString("4900113:addchannel = 1 " 
+  pythia.readString("4900113:onechannel = 1 " 
 		    + to_st((1-inv)/5.)
 		      + " 91 -2 2");
   

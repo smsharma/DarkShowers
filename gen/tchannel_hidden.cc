@@ -41,8 +41,6 @@ double HiddenTChannel::weightDecay( Event& process, int iResBeg, int iResEnd) {
 
 void HiddenTChannel::sigmaKin() {
 
-  //cout << "mchitilde mass is:" << m_chi_tilde << endl;
-
   //spin trace for scalars
   //extra factor of two due to spin average
   double trace = pow2(tH);
@@ -57,7 +55,6 @@ void HiddenTChannel::sigmaKin() {
   ME2 /= 3.0;
 
   
-  cout<<"sampling ME2: "<<ME2<<endl;
   //the overall normalization is off at this moment
   sigma = ME2;
 }

@@ -1,6 +1,199 @@
 #ifndef __pythia_functions_h
 #define __pythia_functions_h
 
+#include "fastjet/ClusterSequence.hh"
+
+// Delphes library
+#include "modules/Delphes.h"
+#include "classes/DelphesClasses.h"
+#include "classes/DelphesFactory.h"
+
+const double PI = 3.14159265358979323846;
+
+using namespace fastjet;
+
+string add_strings(string input, double number){
+  stringstream sout;
+  sout<<number;
+  return input + sout.str();
+}
+
+string to_string(double number){
+  stringstream sout;
+  sout<<number;
+  return sout.str();
+}
+
+string to_string(int number){
+  stringstream sout;
+  sout<<number;
+  return sout.str();
+}
+
+//initialize t_channel processes
+void init_tchannel(Pythia& pythia,
+		   double mphi=1000.,
+		   double pt_cut=500)
+{
+  Sigma2Process* myprocess = new HiddenTChannel(4900101, 666,0.01,mphi);
+
+  // apply a phase-space cut to speed up MC generation
+  pythia.readString(add_strings("PhaseSpace:pTHatMin = ",
+				pt_cut));
+  pythia.setSigmaPtr(myprocess);     
+}
+
+void init_hidden(Pythia& pythia, 
+		 double mass=20.0,
+		 double alpha=1.0,
+		 double inv = 0.3,
+		 bool run=true
+		 )
+{
+  
+  if(run){
+    pythia.readString("HiddenValley:Run = on");
+    pythia.readString(add_strings
+		      ("HiddenValley:Lambda = ", alpha));
+    
+    cout<<"running coupling: conf. scale "<<alpha<<endl;
+  }
+
+  else{
+    
+    pythia.readString("HiddenValley:Run = off");
+    //change FSR strength
+    pythia.readString
+      (add_strings("HiddenValley:alphaFSR = ", alpha));
+  }
+
+  //decouple the heavy flavor state
+  pythia.readString("4900001:m0 = 5000");
+  pythia.readString("4900002:m0 = 5000");
+  pythia.readString("4900003:m0 = 5000");
+  pythia.readString("4900004:m0 = 5000");
+  pythia.readString("4900005:m0 = 5000");
+  pythia.readString("4900006:m0 = 5000");
+  pythia.readString("4900011:m0 = 5000");  
+  pythia.readString("4900012:m0 = 5000");
+  pythia.readString("4900013:m0 = 5000");
+  pythia.readString("4900014:m0 = 5000");
+  pythia.readString("4900015:m0 = 5000");
+  pythia.readString("4900016:m0 = 5000");
+  
+  //mass of scalar dark quark
+  //fix width to be small
+  pythia.readString(add_strings("4900101:m0 = ", mass/2));
+  pythia.readString
+    (add_strings("4900101:mWidth = ", mass/100));
+  pythia.readString
+    (add_strings("4900101:mMin = ", mass/2 - mass/100));
+  pythia.readString
+    (add_strings("4900101:mMax = ", mass/2 + mass/100));
+  
+  //this fixes the qv to be spin 1/2
+  //change to 1 for spin zero
+  //pythia8 has a weird option where spinFv
+  //is correlated with spin of qv
+  pythia.readString("HiddenValley:spinFv = 0");
+  pythia.readString("HiddenValley:FSR = on");
+  pythia.readString("HiddenValley:fragment = on");
+
+  //fix mass of dark scalar mesons
+  //spin 0 diagonal 
+  pythia.readString(add_strings("4900111:m0 = ", mass));
+  //spin 1 diagonal
+  pythia.readString(add_strings("4900113:m0 = ", mass));
+
+  //we mock DM production by having diagonal meson decay
+  //into a pair of charged dark meson
+  //hence each DM is slightly less than half of 
+  //diagonal meson mass
+
+  //spin 0 charged (DM)
+  pythia.readString(add_strings("4900211:m0 = ", mass/2.0-0.01));
+  //spin 1 charged (DM)
+  pythia.readString(add_strings("4900213:m0 = ", mass/2.0-0.01));
+ 
+  //stop showering when pt less than threshold
+  pythia.readString
+    (add_strings("HiddenValley:pTminFSR = ", mass/2));
+    
+  
+  //do one flavor showering
+  //flavor running is achieved elsewhere
+  pythia.readString
+    (add_strings("HiddenValley:nFlav = ", 1));
+  
+  //running for N bosonic flavor
+  pythia.readString
+    (add_strings("HiddenValley:NBFlavRun = ", 0));
+  
+  //running for N fermionic flavor
+  pythia.readString
+    (add_strings("HiddenValley:NFFlavRun = ", 2));
+
+
+  //onMode bRatio meMode product1 product2
+  /*
+    pythia.readString("4900111:onechannel = 1 " 
+    + to_st(1-inv)
+    + " 91 21 21");
+  */
+  
+  //coupling to up-type quark only
+  //implies primary decay to charms from MFV
+  //due to helicity suppression
+  //ignore light flavor
+  pythia.readString("4900111:onechannel = 1 " 
+		    + to_string((1-inv))
+		    + "91 -3 3");
+
+  //invisible ratio
+  //proportion ~inv of the time 
+  //the meson is invisible
+  pythia.readString("4900111:addchannel = 1 " 
+		    + to_string(inv)
+		    + " 0 4900211 -4900211");
+
+  
+  //spin 1 meson decay
+  //democratic to all flavors
+  pythia.readString("4900113:addchannel = 1 " 
+		    + to_string((1-inv)/5.)
+		      + " 91 -2 2");
+  
+  pythia.readString("4900113:addchannel = 1 " 
+		    + to_string((1-inv)/5.)
+		    + " 91 -3 3");
+
+  pythia.readString("4900113:addchannel = 1 " 
+		    + to_string((1-inv)/5.)
+		    + " 91 -4 4");
+  
+  pythia.readString("4900113:addchannel = 1 " 
+		    + to_string((1-inv)/5.)
+		    + " 91 -5 5");
+  
+  //spin 1 invisible ratio
+  pythia.readString("4900113:addchannel = 1 " 
+		    + to_string(inv)
+		    + " 0 4900213 -4900213");
+  
+  //can also decay into 3 gluons through loops
+  //should be seriously suppressed, commented
+  //out for future references
+  
+  /*
+  pythia.readString("4900113:onechannel = 1 1 92 21 21 21");
+  pythia.readString("4900113:onechannel = 1 1 92 21 21 21");
+  */
+
+  //1:3 ratio for producing spin1 vectors
+  pythia.readString
+    (add_strings("HiddenValley:probVector = ", 0.0));
+  
+}
 
 // Pythia UserHook to apply parton level pt cut
 class ParticlePTCut: public UserHooks {
@@ -87,6 +280,153 @@ void Pythia_to_Delphes(DelphesFactory* factory,
     ary->Add(can);
   }
 }
+
+
+//class to estimate remaining time
+class Timer{
+  
+ public:
+  vector<time_t> time_list;
+  vector<int> proc_list;
+  //int day, hr, min, sec;
+  int nevt, max_interval;
+
+ Timer(int nevt, int max_interval = 20):
+  nevt(nevt), max_interval(max_interval)
+  {
+    time_t now;
+    time(&now);
+    time_list.push_back(now);
+    proc_list.push_back(0);
+  }
+
+
+  void update(int nproc){
+    
+    //update number of processed events
+    time_t now;
+    time(&now);
+
+    time_list.push_back(now);
+    proc_list.push_back(nproc);
+    
+  }
+
+  friend ostream& operator<< (ostream &out, Timer& mytime);
+};
+
+ostream& operator<< (ostream &out, const PseudoJet& myjet){
+  out << myjet.pt()<< ","
+      << myjet.m()<< ","
+      << myjet.eta()<< ","
+      << myjet.phi()<< ",";
+  return out;
+}
+
+ostream& operator<< (ostream &out, Timer& mytime){
+
+  //if no info default to zero
+  if(mytime.proc_list.size() <= 1){
+    out<<"\r\033[K"<<"0.0% processed... ";
+    return out;
+  }
+  
+  //first get two timing info for comparison
+  time_t now = mytime.time_list.back();
+  time_t past = mytime.time_list[0];
+
+  int proc = mytime.proc_list.back();
+  int proc_past = mytime.proc_list[0];
+
+  //see if there are more info
+  if(mytime.time_list.size() > mytime.max_interval){
+
+    past = mytime.time_list[ mytime.time_list.size() - 
+			     mytime.max_interval ];
+
+    proc_past = mytime.proc_list[ mytime.proc_list.size() - 
+				  mytime.max_interval ];
+  }
+
+  //estimate percentage done
+  double percent = round (proc*1000.0 /mytime.nevt)/10.0;
+  
+  //estimate time needed
+  double rate = (proc-proc_past)*1.0 / (now-past);
+  int sec_left = round( (mytime.nevt - proc) / (rate) );
+
+  int min = sec_left/60 ;
+  int hr = min/60;
+  int day = hr/24;
+  int sec = sec_left % 60;
+
+  min = min % 60;
+  hr = hr % 24;
+
+  stringstream sout;
+  sout<<"\r\033[K"<<std::setprecision(1)<<fixed<<percent<<"% processed... ";
+
+  if(day > 0)
+    sout<<day<<"d "
+	<<setfill('0') << setw(2)<<hr<<"h "
+	<<setfill('0') << setw(2)<<min<<"m "
+	<<setfill('0') << setw(2)<<sec<<"s";
+
+  else if(hr > 0)
+    sout<<hr<<"h "
+	<<setfill('0') << setw(2)<<min<<"m "
+	<<setfill('0') << setw(2)<<sec<<"s";
+
+  
+  else if(min > 0)
+    sout<<min<<"m "
+	<<setfill('0') << setw(2)<<sec<<"s";
+  
+  else if(sec > 0)
+    sout<<sec<<"s";
+  
+  out<<sout.str()<<flush;
+
+  return out;
+}
+
+double dot3(const PseudoJet& a, const PseudoJet& b){
+return a.px() * b.px() + a.py() * b.py() + a.pz() * b.pz();
+}
+
+
+double get_dphijj(const PseudoJet& met, const vector<PseudoJet>& jets){
+  
+  double result = 999;
+  for(int i=0; i<2 && i<jets.size(); ++i){
+    double t_dphi = fabs(met.phi() - jets[i].phi());
+    if(t_dphi > PI)
+      t_dphi = 2*PI - t_dphi;
+    result = result < t_dphi ? result : t_dphi;
+  }
+  return result;
+
+}
+
+double get_Mt(const PseudoJet& MEt,
+	      const PseudoJet& jj){
+
+  double ET= jj.mperp();
+  double MT = sqrt(jj.m2()+ 2*
+		   (MEt.pt()*jj.pt() -
+		    dot3(jj, MEt)));
+
+  return MT;
+}
+
+
+double get_Mt(const PseudoJet& MEt,
+	      const PseudoJet& jet1_,
+	      const PseudoJet& jet2_){
+
+  return get_Mt(MEt, jet1_ + jet2_);
+}
+
 
 
 

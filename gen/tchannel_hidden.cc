@@ -56,6 +56,8 @@ void HiddenTChannel::sigmaKin() {
 
   ME2 /= 3.0;
 
+  
+  cout<<"sampling ME2: "<<ME2<<endl;
   //the overall normalization is off at this moment
   sigma = ME2;
 }

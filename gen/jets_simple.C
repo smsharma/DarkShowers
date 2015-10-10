@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 
   // Initialization for LHC
   pythia.readString("Beams:eCM = " + 
-	   to_string(cmdline.value<int>("-ECM", 13000)));
+	   to_st(cmdline.value<int>("-ECM", 13000)));
 
   // Custom Higgs pT cut
   /*
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
     double mphi=
       cmdline.value<double>("-mphi", 1000.0);
 
-    init_tchannel(pythia, mphi, 500);
+    init_tchannel(pythia, 2000, 0.0);
 
     init_hidden(pythia,
 		cmdline.value<double>("-phimass", 15.0),
@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
   pythia.readString("Random:setSeed = on");
   // Fix random seed
   pythia.readString("Random:seed = " + 
-		    to_string(cmdline.value<int>("-seed", 0)));
+		    to_st(cmdline.value<int>("-seed", 0)));
 
   // Rehadronization turned on
   if(rehad)

@@ -71,6 +71,7 @@ all: jets_simple
 clean:
 	rm *.exe bin/*.exe *.o *.a
 
+ifeq ($(USER),timlou)
 jets_simple: $(objects) jets_simple.C tchannel_hidden.o gluonportal.o
 	$(CXX) -g -lm -ldl $(objects) CmdLine/CmdLine.o tchannel_hidden.o gluonportal.o jets_simple.C \
 	$(ROOTFLAGS) $(DELPHES_INC) \
@@ -79,4 +80,16 @@ jets_simple: $(objects) jets_simple.C tchannel_hidden.o gluonportal.o
 	-L$(PYTHIA_DIR)/lib -lpythia8 -ldl \
 	-Wl,-rpath,$(DELPHES_DIR):$(PYTHIA_LIB) \
 	-o jets_simple.exe
+endif
 
+ifeq ($(USER),sid)
+jets_simple: $(objects) jets_simple.C tchannel_hidden.o gluonportal.o
+	$(CXX) -O3 $(objects) CmdLine/CmdLine.o tchannel_hidden.o gluonportal.o jets_simple.C \
+	$(ROOTFLAGS) $(DELPHES_INC) \
+	-I$(PYTHIA_DIR)/include -I$(PYTHIA_DIR)/examples \
+	$(ROOT_LIB) $(DELPHES_LIB) \
+	-L$(PYTHIA_DIR)/lib -lpythia8 \
+	-Wl,-rpath,$(DELPHES_DIR) \
+	-o bin/jets_simple.exe
+	ln -sf bin/jets_simple.exe
+endif

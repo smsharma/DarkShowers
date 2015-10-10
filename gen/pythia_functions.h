@@ -13,19 +13,19 @@ const double PI = 3.14159265358979323846;
 
 using namespace fastjet;
 
-string add_strings(string input, double number){
+string add_st(string input, double number){
   stringstream sout;
   sout<<number;
   return input + sout.str();
 }
 
-string to_string(double number){
+string to_st(double number){
   stringstream sout;
   sout<<number;
   return sout.str();
 }
 
-string to_string(int number){
+string to_st(int number){
   stringstream sout;
   sout<<number;
   return sout.str();
@@ -39,7 +39,7 @@ void init_tchannel(Pythia& pythia,
   Sigma2Process* myprocess = new HiddenTChannel(4900101, 666,0.01,mphi);
 
   // apply a phase-space cut to speed up MC generation
-  pythia.readString(add_strings("PhaseSpace:pTHatMin = ",
+  pythia.readString(add_st("PhaseSpace:pTHatMin = ",
 				pt_cut));
   pythia.setSigmaPtr(myprocess);     
 }
@@ -54,7 +54,7 @@ void init_hidden(Pythia& pythia,
   
   if(run){
     pythia.readString("HiddenValley:Run = on");
-    pythia.readString(add_strings
+    pythia.readString(add_st
 		      ("HiddenValley:Lambda = ", alpha));
     
     cout<<"running coupling: conf. scale "<<alpha<<endl;
@@ -65,7 +65,7 @@ void init_hidden(Pythia& pythia,
     pythia.readString("HiddenValley:Run = off");
     //change FSR strength
     pythia.readString
-      (add_strings("HiddenValley:alphaFSR = ", alpha));
+      (add_st("HiddenValley:alphaFSR = ", alpha));
   }
 
   //decouple the heavy flavor state
@@ -84,13 +84,13 @@ void init_hidden(Pythia& pythia,
   
   //mass of scalar dark quark
   //fix width to be small
-  pythia.readString(add_strings("4900101:m0 = ", mass/2));
+  pythia.readString(add_st("4900101:m0 = ", mass/2));
   pythia.readString
-    (add_strings("4900101:mWidth = ", mass/100));
+    (add_st("4900101:mWidth = ", mass/100));
   pythia.readString
-    (add_strings("4900101:mMin = ", mass/2 - mass/100));
+    (add_st("4900101:mMin = ", mass/2 - mass/100));
   pythia.readString
-    (add_strings("4900101:mMax = ", mass/2 + mass/100));
+    (add_st("4900101:mMax = ", mass/2 + mass/100));
   
   //this fixes the qv to be spin 1/2
   //change to 1 for spin zero
@@ -102,9 +102,9 @@ void init_hidden(Pythia& pythia,
 
   //fix mass of dark scalar mesons
   //spin 0 diagonal 
-  pythia.readString(add_strings("4900111:m0 = ", mass));
+  pythia.readString(add_st("4900111:m0 = ", mass));
   //spin 1 diagonal
-  pythia.readString(add_strings("4900113:m0 = ", mass));
+  pythia.readString(add_st("4900113:m0 = ", mass));
 
   //we mock DM production by having diagonal meson decay
   //into a pair of charged dark meson
@@ -112,27 +112,27 @@ void init_hidden(Pythia& pythia,
   //diagonal meson mass
 
   //spin 0 charged (DM)
-  pythia.readString(add_strings("4900211:m0 = ", mass/2.0-0.01));
+  pythia.readString(add_st("4900211:m0 = ", mass/2.0-0.01));
   //spin 1 charged (DM)
-  pythia.readString(add_strings("4900213:m0 = ", mass/2.0-0.01));
+  pythia.readString(add_st("4900213:m0 = ", mass/2.0-0.01));
  
   //stop showering when pt less than threshold
   pythia.readString
-    (add_strings("HiddenValley:pTminFSR = ", mass/2));
+    (add_st("HiddenValley:pTminFSR = ", mass));
     
   
   //do one flavor showering
   //flavor running is achieved elsewhere
   pythia.readString
-    (add_strings("HiddenValley:nFlav = ", 1));
+    (add_st("HiddenValley:nFlav = ", 1));
   
   //running for N bosonic flavor
   pythia.readString
-    (add_strings("HiddenValley:NBFlavRun = ", 0));
+    (add_st("HiddenValley:NBFlavRun = ", 0));
   
   //running for N fermionic flavor
   pythia.readString
-    (add_strings("HiddenValley:NFFlavRun = ", 2));
+    (add_st("HiddenValley:NFFlavRun = ", 2));
 
 
   //onMode bRatio meMode product1 product2
@@ -147,38 +147,38 @@ void init_hidden(Pythia& pythia,
   //due to helicity suppression
   //ignore light flavor
   pythia.readString("4900111:onechannel = 1 " 
-		    + to_string((1-inv))
+		    + to_st((1-inv))
 		    + "91 -3 3");
 
   //invisible ratio
   //proportion ~inv of the time 
   //the meson is invisible
   pythia.readString("4900111:addchannel = 1 " 
-		    + to_string(inv)
+		    + to_st(inv)
 		    + " 0 4900211 -4900211");
 
   
   //spin 1 meson decay
   //democratic to all flavors
   pythia.readString("4900113:addchannel = 1 " 
-		    + to_string((1-inv)/5.)
+		    + to_st((1-inv)/5.)
 		      + " 91 -2 2");
   
   pythia.readString("4900113:addchannel = 1 " 
-		    + to_string((1-inv)/5.)
+		    + to_st((1-inv)/5.)
 		    + " 91 -3 3");
 
   pythia.readString("4900113:addchannel = 1 " 
-		    + to_string((1-inv)/5.)
+		    + to_st((1-inv)/5.)
 		    + " 91 -4 4");
   
   pythia.readString("4900113:addchannel = 1 " 
-		    + to_string((1-inv)/5.)
+		    + to_st((1-inv)/5.)
 		    + " 91 -5 5");
   
   //spin 1 invisible ratio
   pythia.readString("4900113:addchannel = 1 " 
-		    + to_string(inv)
+		    + to_st(inv)
 		    + " 0 4900213 -4900213");
   
   //can also decay into 3 gluons through loops
@@ -192,7 +192,7 @@ void init_hidden(Pythia& pythia,
 
   //1:3 ratio for producing spin1 vectors
   pythia.readString
-    (add_strings("HiddenValley:probVector = ", 0.75));
+    (add_st("HiddenValley:probVector = ", 0.75));
   
 }
 

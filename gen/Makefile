@@ -20,7 +20,7 @@ objects := $(patsubst %.c,%.o,$(wildcard *.c))
 # Set user
 ################################################################################
 
-ifeq ($(USER),tim)
+ifeq ($(USER),timlou)
 PYTHIA_DIR:=/home/timlou/research/pythia8209
 DELPHES_DIR:=/home/timlou/research/Delphes-3.1.2
 endif
@@ -51,7 +51,7 @@ ifeq ($(USER),sid)
 DELPHES_LIB := -L$(DELPHES_DIR) -lDelphes -Wl,-rpath $(DELPHES_DIR)
 endif
 
-ifeq ($(USER),tim)
+ifeq ($(USER),timlou)
 DELPHES_LIB := -L$(DELPHES_DIR) -lDelphes
 endif
 
@@ -75,7 +75,7 @@ jets_simple: $(objects) jets_simple.C tchannel_hidden.o gluonportal.o
 	$(CXX) -O3 -lm -ldl $(objects) CmdLine/CmdLine.o tchannel_hidden.o gluonportal.o jets_simple.C \
 	$(ROOTFLAGS) $(DELPHES_INC) \
 	-I$(PYTHIA_DIR)/include -I$(PYTHIA_DIR)/examples \
-	$(ROOT_LIB) $(DELPHES_LIB) \
+	$(ROOT_LIB) $(DELPHES_LIB) -ldl \
 	-L$(PYTHIA_DIR)/lib -lpythia8 -ldl \
 	-Wl,-rpath,$(DELPHES_DIR):$(PYTHIA_LIB) \
 	-o jets_simple.exe

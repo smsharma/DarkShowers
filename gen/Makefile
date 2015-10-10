@@ -72,7 +72,7 @@ clean:
 	rm *.exe bin/*.exe *.o *.a
 
 jets_simple: $(objects) jets_simple.C tchannel_hidden.o gluonportal.o
-	$(CXX) -O3 -lm -ldl $(objects) CmdLine/CmdLine.o tchannel_hidden.o gluonportal.o jets_simple.C \
+	$(CXX) -g -lm -ldl $(objects) CmdLine/CmdLine.o tchannel_hidden.o gluonportal.o jets_simple.C \
 	$(ROOTFLAGS) $(DELPHES_INC) \
 	-I$(PYTHIA_DIR)/include -I$(PYTHIA_DIR)/examples \
 	$(ROOT_LIB) $(DELPHES_LIB) -ldl \

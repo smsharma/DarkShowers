@@ -16,7 +16,7 @@ public:
   // idHidden = id of the particle Zprime decays into
   // Zprime decays to +idHidden and -idHidden
   HiddenTChannel(int idHidden, int idZprime=666, 
-		     double width=0.01, double m_chi_tilde=1000.): 
+		 double width=0.01, double m_chi_tilde=1000.): 
     idHidden(idHidden), idZprime(idZprime), width(width), m_chi_tilde(m_chi_tilde) {}
 
   // Initialize process.
@@ -38,7 +38,7 @@ public:
 
   // Info on the subprocess.
   virtual string name()       const 
-  {return "q qbar -> Z' -> hidden";}
+  {return "q qbar -> t-channel -> hidden";}
   virtual int    code()       const {return 10000;}
   virtual string inFlux()     const {return "qqbarSame";}
   //virtual int    resonanceA() const {return idZprime;}

@@ -2,6 +2,7 @@
 #define __pythia_functions_h
 
 #include "fastjet/ClusterSequence.hh"
+#include "tchannel_hidden.hh"
 
 // Delphes library
 #include "modules/Delphes.h"
@@ -191,7 +192,7 @@ void init_hidden(Pythia& pythia,
 
   //1:3 ratio for producing spin1 vectors
   pythia.readString
-    (add_strings("HiddenValley:probVector = ", 0.0));
+    (add_strings("HiddenValley:probVector = ", 0.75));
   
 }
 

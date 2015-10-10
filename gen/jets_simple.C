@@ -123,17 +123,20 @@ int main(int argc, char** argv) {
   
   //hidden scalar production
   if (mode == "tchannel"){ 
+
+    double mphi=
+      cmdline.value<double>("-mphi", 1000.0);
+
+    init_tchannel(pythia, mphi, 500);
+
     init_hidden(pythia,
 		cmdline.value<double>("-phimass", 15.0),
 		cmdline.value<double>("-alpha", 10),
 		cmdline.value<double>("-inv", 0.3)
 		);  
 
-    double mphi=
-      cmdline.value<double>("-mphi", 1000.0);
 
     cout<<"phi mass: "<<mphi<<endl;
-    init_tchannel(pythia, mphi, 500 );
     
   }  
   

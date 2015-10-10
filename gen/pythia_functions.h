@@ -38,7 +38,7 @@ void init_tchannel(Pythia& pythia,
   Sigma2Process* myprocess = new HiddenTChannel(4900101, 666,0.01,mphi);
 
   // apply a phase-space cut to speed up MC generation
-  pythia.readString(add_strings("PhaseSpace:pTHatMin =  1000",
+  pythia.readString(add_strings("PhaseSpace:pTHatMin = ",
 				pt_cut));
   pythia.setSigmaPtr(myprocess);     
 }
@@ -65,8 +65,8 @@ void init_hidden(Pythia& pythia,
     //change FSR strength
     pythia.readString
       (add_strings("HiddenValley:alphaFSR = ", alpha));
-
   }
+
   //decouple the heavy flavor state
   pythia.readString("4900001:m0 = 5000");
   pythia.readString("4900002:m0 = 5000");
@@ -111,13 +111,13 @@ void init_hidden(Pythia& pythia,
   //diagonal meson mass
 
   //spin 0 charged (DM)
-  pythia.readString(add_strings("4900211:m0 = ", mass/2-0.01));
+  pythia.readString(add_strings("4900211:m0 = ", mass/2.0-0.01));
   //spin 1 charged (DM)
-  pythia.readString(add_strings("4900213:m0 = ", mass/2-0.01));
+  pythia.readString(add_strings("4900213:m0 = ", mass/2.0-0.01));
  
   //stop showering when pt less than threshold
   pythia.readString
-    (add_strings("HiddenValley:pTminFSR = ", mass));
+    (add_strings("HiddenValley:pTminFSR = ", mass/2));
     
   
   //do one flavor showering
@@ -178,7 +178,7 @@ void init_hidden(Pythia& pythia,
   //spin 1 invisible ratio
   pythia.readString("4900113:addchannel = 1 " 
 		    + to_string(inv)
-		    + " 0 4900211 -4900211");
+		    + " 0 4900213 -4900213");
   
   //can also decay into 3 gluons through loops
   //should be seriously suppressed, commented
@@ -191,7 +191,7 @@ void init_hidden(Pythia& pythia,
 
   //1:3 ratio for producing spin1 vectors
   pythia.readString
-    (add_strings("HiddenValley:probVector = ", 0.75));
+    (add_strings("HiddenValley:probVector = ", 0.0));
   
 }
 

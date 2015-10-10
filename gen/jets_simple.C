@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
   //parse input strings
   CmdLine cmdline(argc, argv);
   
-  string mode = cmdline.value<string>("-m", "t-channel");
+  string mode = cmdline.value<string>("-m", "tchannel");
   double pt_min = cmdline.value<double>("-ptmin", 100);
   double met_min = cmdline.value<double>("-metmin", 0);
   double met_max = cmdline.value<double>("-metmax", 99999);
@@ -125,9 +125,8 @@ int main(int argc, char** argv) {
   if (mode == "tchannel"){ 
     init_hidden(pythia,
 		cmdline.value<double>("-phimass", 15.0),
-		cmdline.value<double>("-alpha", 0.1),
-		cmdline.value<double>("-inv", 0.3),
-		cmdline.present("-run")
+		cmdline.value<double>("-alpha", 10),
+		cmdline.value<double>("-inv", 0.3)
 		);  
 
     double mphi=
@@ -262,8 +261,12 @@ int main(int argc, char** argv) {
 
   while ((!m_lhe && (iEvent < nEvent)) || (m_lhe && (iTotal < nEvent))) 
   {
+    cout<<"begin loop"<<endl;
+
     // Clear delphes
     delphes->Clear();
+
+    cout<<"clear delphes"<<endl;
 
     // If rehadronization is turned on
     if(rehad) {
@@ -289,8 +292,13 @@ int main(int argc, char** argv) {
     }
     else
     {
+      cout<<"trying to run pythia"<<endl;
+      cout<<"pythia status: "<<pythia.next()<<endl;
+
       // Tell pythia to run pythia.next()
       while (!pythia.next()) {
+
+	cout<<"pythia next"<<endl;
 	      if (++iAbort < nAbort) continue;
         cerr << "ERROR: Event generation aborted prematurely, owing to error!" << endl;
 	      break;
@@ -302,11 +310,15 @@ int main(int argc, char** argv) {
     // Increment tried events
     ++iTotal;
 
+    cout<<"pythia to delphes"<<endl;
+
     // Now process through Delphes
     Pythia_to_Delphes(factory, stable, event);
     
     // Run delphes code
     delphes->ProcessTask();
+
+    cout<<"after processing delphes"<<endl;
 
     Candidate *can;
 
@@ -384,6 +396,10 @@ int main(int argc, char** argv) {
     for(int i=0; i<jets->GetEntriesFast(); i++){
       
       Candidate* cjet = (Candidate*) jets->At(i);
+
+      if(cjet->Momentum.Pt()<50.0)
+	continue;
+	
       if(fabs(cjet->Momentum.Eta())>3.0)
 	continue;
 
@@ -419,6 +435,8 @@ int main(int argc, char** argv) {
       jets_ntrk.push_back(ntrk);
     }
 
+    cout<<"checking cut"<<endl;
+
     //demand njets > pt_min
     if(selected_jets.size() < njet ||
        selected_jets[njet-1].pt() < pt_min) 
@@ -426,6 +444,8 @@ int main(int argc, char** argv) {
 
     if (get_dphijj(MEt, selected_jets) > dphi_max)
       continue;
+
+    cout<<"passing cut"<<endl;
 
     //print the jets
     for(int i=0; i<selected_jets.size(); i++){
@@ -436,12 +456,13 @@ int main(int argc, char** argv) {
     }    
 
     //print the leptons
-    for(int i=0; i<selected_jets.size(); i++){
+    for(int i=0; i<selected_leptons.size(); i++){
       file_obj << iEvent + 1 << ",l,"
 	       << i+1 << ","
 	       << selected_leptons[i] <<",1"
 	       << endl;  
     }
+    cout<<"printing met"<<endl;
 
     //print met
     file_obj << iEvent + 1 <<",met,"
@@ -452,6 +473,8 @@ int main(int argc, char** argv) {
     int n_dark=0;
     vector<PseudoJet> dark_mesons;
     PseudoJet inv_jet;
+
+    cout<<"gathering mc info"<<endl;
 
     // gather MC information
     for (int i=0; i<event.size(); ++i){
@@ -487,6 +510,8 @@ int main(int argc, char** argv) {
       inv_jet += meson;
     }
 
+    cout<<"final printing "<<endl;
+
     PseudoJet jj;
     //vector of first two jets
     //could have less than two jets
@@ -512,8 +537,6 @@ int main(int argc, char** argv) {
 	    << selected_leptons.size()<<","
 	    << n_dark<<","
 	    << n_diag<<","
-
-
 	    <<endl;
 
     ++iEvent;

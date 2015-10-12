@@ -32,7 +32,7 @@
 
 #include "Pythia8/Pythia.h"
 //matching not implemented yet
-//#include "CombineMatchingInput.h"
+#include "Pythia8Plugins/CombineMatchingInput.h"
 
 //Pythia8 library to perform t-channel production
 #include "tchannel_hidden.hh"
@@ -142,56 +142,34 @@ int main(int argc, char** argv) {
     //read lhe file
     m_lhe=true;
     
-    // CombineMatchingInput combined;
-    // UserHooks* matching = combined.getHook(pythia);
-    // if (!matching) return 1;
-    // pythia.setUserHooksPtr(matching);
+    CombineMatchingInput combined;
+    UserHooks* matching = combined.getHook(pythia);
+    if (!matching) {
+      cout<<"ERROR: cannot obtain matching pointer"<<endl;
+      return 1;
+    }
+    
+    pythia.setUserHooksPtr(matching);
 
-    pythia.readString("Beams:frameType = 4");
+    pythia.readString("Init:showChangedParticleData = off");
     pythia.readString("Beams:LHEF = "+ input);
-
-    // pythia.readString("JetMatching:merge = on");
-    // pythia.readString("JetMatching:scheme = 1");
-    // pythia.readString("JetMatching:doShowerKt = on");
-    // pythia.readString("JetMatching:setMad = on");
-    /*
-    pythia.readString("JetMatching:qCut = 30.0000");
-    pythia.readString("JetMatching:coneRadius = 1.0");
-    pythia.readString("JetMatching:etaJetMax = 10.0");
-    pythia.readString("JetMatching:nJetMax = 3");
-    */
-
-    /*    
-    //pythia.readString("JetMatching:nJet = 2");
-    //pythia.readString("JetMatching:doMerge = 1");
-    pythia.readString("JetMatching:nQmatch = 5");
-
+    pythia.readString("Beams:frameType = 4");
+    pythia.readString("JetMatching:merge = on");
+    pythia.readString("JetMatching:scheme = 1");
+    pythia.readString("JetMatching:setMad = on");
     pythia.readString("JetMatching:jetAlgorithm = 2");
-    pythia.readString("JetMatching:slowJetPower = -1");
-    pythia.readString("JetMatching:nQmatch = 5");
-    */
-
-    
-    if (cmdline.present("-inclusive"))
-    {
-      cout<<"Inclusive mode, more jets allowed"<<endl;
-      pythia.readString("JetMatching:exclusive = 0");
-    }
-
-    else 
-    {
-      cout<<"Exclusive mode, all jets must match"<<endl;
-      pythia.readString("JetMatching:exclusive = 1");
-    }
+    pythia.readString("JetMatching:exclusive = 2");
+    pythia.readString("JetMatching:nJetMax = " + 
+		      cmdline.value<int>("-nmatch", 2));
     cout<<"input: "<<"Beams:LHEF = "+input<<endl;
-    
-  }  
+  } 
+  
   else
   {
     cerr<<"ERROR: mode: " << mode << " not supported, exiting..." << endl;
     return 1;
   }
-    
+  
   // Set seed
   pythia.readString("Random:setSeed = on");
   // Fix random seed
@@ -259,8 +237,10 @@ int main(int argc, char** argv) {
   int evt_print = 20;
 
   // Running simulation
+  bool end=false;
 
-  while ((!m_lhe && (iEvent < nEvent)) || (m_lhe && (iTotal < nEvent))) 
+  while ((!m_lhe && (iEvent < nEvent)) || 
+	 (m_lhe && (iTotal < nEvent) && !end)) 
   {
     // Clear delphes
     delphes->Clear();
@@ -271,18 +251,26 @@ int main(int argc, char** argv) {
       // Renew an event
       if (iTotal % 5 == 0) {
       	while (!pythia.next()) {
-  	      if (++iAbort < nAbort) continue;
-  	      cerr << "ERROR: Event generation aborted prematurely, owing to error!" << endl;
-  	      break;
-  	    }
-  	
-  	    saved_event = pythia.event;
+	  
+	  if(pythia.info.atEndOfFile()){
+	    cout <<"Pythia reached end of file"<<endl;
+	    end=true;
+	    break;    
+	  }
+
+	  
+	  if (++iAbort < nAbort) continue;
+	  
+	  cerr << "ERROR: Event generation aborted prematurely, owing to error!" << endl;
+	  break;
+	}
+	
+	saved_event = pythia.event;
       }
 
       else 
-      {
-	      pythia.event = saved_event;
-      }
+	pythia.event = saved_event;
+	
       
       // Run hadronization
       pythia.forceHadronLevel();
@@ -291,13 +279,20 @@ int main(int argc, char** argv) {
     {
       // Tell pythia to run pythia.next()
       while (!pythia.next()) {
-	if (++iAbort < nAbort) continue;
-        cerr << "ERROR: Event generation aborted due to error!" << endl;
-	break;
+
+	  if(pythia.info.atEndOfFile()){
+	    cout <<"Pythia reached end of file"<<endl;
+	    end=true;
+	    break;    
+	  }
+	  
+	  if (++iAbort < nAbort) continue;
+	  cerr<<"ERROR: Event generation aborted due to error!" 
+	       <<endl;
+	  break;
       }
     }
-    if(m_lhe && pythia.info.atEndOfFile())
-      break;    
+
 
     // Increment tried events
     ++iTotal;

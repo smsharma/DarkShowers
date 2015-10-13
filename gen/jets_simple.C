@@ -78,6 +78,7 @@ int main(int argc, char** argv) {
   // file_evt stores event wide variables
   // also last two line stores cxn, efficiency...etc
   ofstream file_evt;
+  ofstream file_meta;
 
   //file_obj stores object info for each event
   //i.e. jets, leptons, dark mesons...etc
@@ -90,6 +91,7 @@ int main(int argc, char** argv) {
   {
     file_evt.open((output + ".evt").c_str());
     file_obj.open((output + ".obj").c_str());
+    file_meta.open((output + ".meta").c_str());
   }
   catch(...)
   {
@@ -531,9 +533,9 @@ int main(int argc, char** argv) {
   cout<<mytime<<endl;
   cout<<iEvent<<" total events"<<endl;
 
-  file_evt<<"# nevt, npass, eff, total, pass, "
+  file_meta<<"nevt, npass, eff, total, pass, "
 	   <<"ptcut, metcut, cxn, cxn_err"<<endl;
-  file_evt<<"# "<<iTotal<<","<<iEvent<<","
+  file_meta<<iTotal<<","<<iEvent<<","
 	   <<iEvent/double(iTotal)<<","
 	   <<iTotal<<","
 	   <<iEvent<<","

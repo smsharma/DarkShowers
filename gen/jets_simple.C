@@ -427,7 +427,7 @@ int main(int argc, char** argv) {
     for(int i=0; i<selected_jets.size(); i++){
       file_obj << iEvent + 1 << ",j,"
 	       << i+1 << ","
-	       << selected_jets[i] <<","
+	       << selected_jets[i] 
 	       << jets_ntrk[i] <<endl;  
     }    
 
@@ -435,13 +435,13 @@ int main(int argc, char** argv) {
     for(int i=0; i<selected_leptons.size(); i++){
       file_obj << iEvent + 1 << ",l,"
 	       << i+1 << ","
-	       << selected_leptons[i] <<",1"
+	       << selected_leptons[i] <<"1"
 	       << endl;  
     }
     //print met
     file_obj << iEvent + 1 <<",met,"
 	     << 1 << "," 
-	     << MEt<<",0"<<endl;
+	     << MEt<<"0"<<endl;
 
     int n_diag=0;
     int n_dark=0;

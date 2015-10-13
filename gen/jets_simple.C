@@ -1,5 +1,7 @@
 // Tim Lou
 // 10/04/2015
+// Modified:
+// 10/13/2015: Siddharth Mishra-Sharma
 
 // c++ tools
 #include <cstring>

@@ -60,20 +60,20 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-  cout<<"Usage: -m (mode) -n (nevent = 100) -o (output) -pt_min (100) -mphi (1000) -metmin (0) -phimass (default=20) -alpha (dark confinement scale) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off)"<<endl;
+  cout<<"Usage: -m (mode) -n (nevent = 100) -o (output) -pt_min (100) -mphi (1000) -metmin (0) -phimass (default=20) -alpha (dark confinement scale) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off) -njet (2)"<<endl;
 
   //parse input strings
   CmdLine cmdline(argc, argv);
   
-  string mode = cmdline.value<string>("-m", "tchannel");
-  double pt_min = cmdline.value<double>("-ptmin", 100);
-  double met_min = cmdline.value<double>("-metmin", 800);
-  double met_max = cmdline.value<double>("-metmax", 99999);
-  double dphi_max = cmdline.value<double>("-dphimax", 999);
+  string mode = cmdline.value<string>("-m", "tchannel"); // Run mode
+  double pt_min = cmdline.value<double>("-ptmin", 100); // Min pT of all chosen leading njet jets (selected jets)
+  double met_min = cmdline.value<double>("-metmin", 800); // Min MET
+  double met_max = cmdline.value<double>("-metmax", 99999); // Max MET
+  double dphi_max = cmdline.value<double>("-dphimax", 999); // Max dphi between jet and the selected jets
 
-  string output = cmdline.value<string>("-o", "output");
+  string output = cmdline.value<string>("-o", "output"); // Name of output file
 
-  bool rehad = cmdline.present("-rehad");
+  bool rehad = cmdline.present("-rehad"); // Rehadronize?
 
   // Instantiate event-wide, object and info files
   // file_evt stores event wide variables
@@ -126,13 +126,15 @@ int main(int argc, char** argv) {
   if (mode == "tchannel"){ 
 
     double mphi=
-      cmdline.value<double>("-mphi", 1000.0);
+      cmdline.value<double>("-mphi", 1000.0); // Bifundamental mass
+
+      cout << "INFO: bufundamental mass is " + to_st(mphi) << endl;
 
     init_tchannel(pythia, mphi, 0.0);
 
     init_hidden(pythia,
 		cmdline.value<double>("-phimass", 20.0),
-		cmdline.value<double>("-alpha", 10), // Actually just the confinement scale, not alpha_dark
+		cmdline.value<double>("-alpha", 10),
 		cmdline.value<double>("-inv", 0.3)
 		);  
   }  
@@ -250,26 +252,23 @@ int main(int argc, char** argv) {
       if (iTotal % 5 == 0) {
       	while (!pythia.next()) {
 	  
-	  if(pythia.info.atEndOfFile()){
-	    cout <<"Pythia reached end of file"<<endl;
-	    end=true;
-	    break;    
-	  }
+      	  if(pythia.info.atEndOfFile()){
+      	    cout <<"Pythia reached end of file"<<endl;
+      	    end=true;
+      	    break;    
+      	  }
 
-	  
-	  if (++iAbort < nAbort) continue;
-	  
-	  cerr << "ERROR: Event generation aborted prematurely, owing to error!" << endl;
-	  break;
-	}
+  	      if (++iAbort < nAbort) continue;
+  	  
+      	  cerr << "ERROR: Event generation aborted prematurely, owing to error!" << endl;
+      	  break;
+      	}
 	
-	saved_event = pythia.event;
+	    saved_event = pythia.event;
       }
 
-      else 
-	pythia.event = saved_event;
+      else pythia.event = saved_event;
 	
-      
       // Run hadronization
       pythia.forceHadronLevel();
     }
@@ -418,7 +417,7 @@ int main(int argc, char** argv) {
 
 
     //demand njets > pt_min
-    if(selected_jets.size() < njet || selected_jets[0].pt() < pt_min) 
+    if(selected_jets.size() < njet || selected_jets[njet-1].pt() < pt_min) 
       continue;
 
     if (get_dphijj(MEt, selected_jets) > dphi_max)

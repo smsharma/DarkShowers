@@ -1,5 +1,6 @@
 // Tim Lou
 // 10/04/2015
+
 // Modified:
 // 10/13/2015: Siddharth Mishra-Sharma
 
@@ -59,14 +60,14 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-  cout<<"Usage: -m (mode -- source) -n (nevent = 100) -o (output.txt) -pt_min (200)  -met_min (0) -phimass (default=0.5) -alpha (dark FSR coupling) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off)"<<endl;
+  cout<<"Usage: -m (mode) -n (nevent = 100) -o (output) -pt_min (100) -mphi (1000) -metmin (0) -phimass (default=20) -alpha (dark confinement scale) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off)"<<endl;
 
   //parse input strings
   CmdLine cmdline(argc, argv);
   
   string mode = cmdline.value<string>("-m", "tchannel");
   double pt_min = cmdline.value<double>("-ptmin", 100);
-  double met_min = cmdline.value<double>("-metmin", 0);
+  double met_min = cmdline.value<double>("-metmin", 800);
   double met_max = cmdline.value<double>("-metmax", 99999);
   double dphi_max = cmdline.value<double>("-dphimax", 999);
 
@@ -131,7 +132,7 @@ int main(int argc, char** argv) {
 
     init_hidden(pythia,
 		cmdline.value<double>("-phimass", 20.0),
-		cmdline.value<double>("-alpha", 10),
+		cmdline.value<double>("-alpha", 10), // Actually just the confinement scale, not alpha_dark
 		cmdline.value<double>("-inv", 0.3)
 		);  
   }  
@@ -415,9 +416,9 @@ int main(int argc, char** argv) {
       jets_ntrk.push_back(ntrk);
     }
 
+
     //demand njets > pt_min
-    if(selected_jets.size() < njet ||
-       selected_jets[njet-1].pt() < pt_min) 
+    if(selected_jets.size() < njet || selected_jets[0].pt() < pt_min) 
       continue;
 
     if (get_dphijj(MEt, selected_jets) > dphi_max)

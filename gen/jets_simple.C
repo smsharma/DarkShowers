@@ -3,7 +3,7 @@
 // Modified:
 // 10/13/2015: Siddharth Mishra-Sharma
 
-// c++ tools
+// C++ tools
 #include <cstring>
 #include <sstream>
 #include <fstream>
@@ -26,17 +26,17 @@
 #include "classes/DelphesClasses.h"
 #include "classes/DelphesFactory.h"
 
-//fastjet??
-//duplicates in delphes
+// FastJet?
+// Duplicates in Delphes
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/Selector.hh"
 #include "fastjet/contribs/Nsubjettiness/Nsubjettiness.hh"
 
+// Pythia
 #include "Pythia8/Pythia.h"
-//matching not implemented yet
-#include "Pythia8Plugins/CombineMatchingInput.h"
+#include "Pythia8Plugins/CombineMatchingInput.h" //  Matching not implemented yet
 
-//Pythia8 library to perform t-channel production
+// Pythia8 library to perform t-channel production
 #include "tchannel_hidden.hh"
 
 //Pythia8 library to perform higher dimensional ops
@@ -61,7 +61,6 @@ int main(int argc, char** argv) {
 
   cout<<"Usage: -m (mode -- source) -n (nevent = 100) -o (output.txt) -pt_min (200)  -met_min (0) -phimass (default=0.5) -alpha (dark FSR coupling) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off)"<<endl;
 
-  
   //parse input strings
   CmdLine cmdline(argc, argv);
   
@@ -87,7 +86,6 @@ int main(int argc, char** argv) {
 
   if (mode == "lhe")
     input = cmdline.value<string>("-i");  
-
   try
   {
     file_evt.open((output + ".evt").c_str());
@@ -121,7 +119,7 @@ int main(int argc, char** argv) {
   if(!cmdline.present("-v"))
     pythia.readString("Print:quiet = on");
 
-  double mZ = cmdline.value<double>("-mZ", 1000);
+  double mZ = cmdline.value<double>("-mZ", 1000); // Not sure if this is needed or just version creep?
   
   //hidden scalar production
   if (mode == "tchannel"){ 

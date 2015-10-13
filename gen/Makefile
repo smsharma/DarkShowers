@@ -25,6 +25,11 @@ PYTHIA_DIR:=/home/timlou/research/pythia8209
 DELPHES_DIR:=/home/timlou/research/Delphes-3.1.2
 endif
 
+ifeq ($(USER),sid_feynman)
+PYTHIA_DIR:=/group/hepheno/heptools/pythia8209
+DELPHES_DIR:=/group/hepheno/heptools/Delphes-3.2.0
+endif
+
 ifeq ($(USER),sid)
 PYTHIA_DIR:=/Users/siddharth/pythia8205
 DELPHES_DIR:=/Users/siddharth/Delphes-3.2.0
@@ -41,9 +46,9 @@ PYTHIA_LIB:=$(PYTHIA_DIR)/lib
 PYTHIA_SHARE:=$(PYTHIA_DIR)/share/Pythia8
 
 # ROOT directories
+ROOT_INC := /group/hepheno/heptools/root/
 ROOTFLAGS := `root-config --cflags` 
 ROOT_LIB := -L`root-config --libdir` -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -pthread -lm -ldl -rdynamic
-ROOT_INC := /usr/local/include/root/
 
 # Delphes directories
 DELPHES_INC := -I$(DELPHES_DIR) -I$(DELPHES_DIR)/classes -I$(DELPHES_DIR)/external  -I$(ROOT_INC)  -I/usr/local/include/Pythia8Plugins/
@@ -55,6 +60,9 @@ ifeq ($(USER),timlou)
 DELPHES_LIB := -L$(DELPHES_DIR) -lDelphes
 endif
 
+ifeq ($(USER),sid_feynman)
+DELPHES_LIB := -L$(DELPHES_DIR) -lDelphes 
+endif
 ################################################################################
 # RULES: Definition of the rules used to build the PYTHIA examples.
 ################################################################################
@@ -72,6 +80,17 @@ clean:
 	rm *.exe bin/*.exe *.o *.a
 
 ifeq ($(USER),timlou)
+jets_simple: $(objects) jets_simple.C tchannel_hidden.o gluonportal.o
+	$(CXX) -g -lm -ldl $(objects) CmdLine/CmdLine.o tchannel_hidden.o gluonportal.o jets_simple.C \
+	$(ROOTFLAGS) $(DELPHES_INC) \
+	-I$(PYTHIA_DIR)/include -I$(PYTHIA_DIR)/examples \
+	$(ROOT_LIB) $(DELPHES_LIB) -ldl \
+	-L$(PYTHIA_DIR)/lib -lpythia8 -ldl \
+	-Wl,-rpath,$(DELPHES_DIR):$(PYTHIA_LIB) \
+	-o jets_simple.exe
+endif
+
+ifeq ($(USER),sid_feynman)
 jets_simple: $(objects) jets_simple.C tchannel_hidden.o gluonportal.o
 	$(CXX) -g -lm -ldl $(objects) CmdLine/CmdLine.o tchannel_hidden.o gluonportal.o jets_simple.C \
 	$(ROOTFLAGS) $(DELPHES_INC) \

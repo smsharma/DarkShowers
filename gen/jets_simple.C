@@ -155,8 +155,7 @@ int main(int argc, char** argv) {
     pythia.readString("JetMatching:setMad = on");
     pythia.readString("JetMatching:jetAlgorithm = 2");
     pythia.readString("JetMatching:exclusive = 2");
-    pythia.readString("JetMatching:nJetMax = " + 
-		      cmdline.value<int>("-nmatch", 2));
+    pythia.readString("JetMatching:nJetMax = " + to_st(cmdline.value<int>("-nmatch", 2)));
     cout<<"input: "<<"Beams:LHEF = "+input<<endl;
   } 
   

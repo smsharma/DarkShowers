@@ -118,8 +118,6 @@ int main(int argc, char** argv) {
   // Check for verbose mode
   if(!cmdline.present("-v"))
     pythia.readString("Print:quiet = on");
-
-  double mZ = cmdline.value<double>("-mZ", 1000); // Not sure if this is needed or just version creep?
   
   //hidden scalar production
   if (mode == "tchannel"){ 
@@ -127,15 +125,13 @@ int main(int argc, char** argv) {
     double mphi=
       cmdline.value<double>("-mphi", 1000.0);
 
-    init_tchannel(pythia, 2000, 0.0);
+    init_tchannel(pythia, mphi, 0.0);
 
     init_hidden(pythia,
 		cmdline.value<double>("-phimass", 20.0),
 		cmdline.value<double>("-alpha", 10),
 		cmdline.value<double>("-inv", 0.3)
 		);  
-
-
   }  
   
   else if(mode == "lhe"){

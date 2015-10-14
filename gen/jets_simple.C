@@ -73,7 +73,8 @@ int main(int argc, char** argv) {
 
   string output = cmdline.value<string>("-o", "output"); // Name of output file
 
-  bool rehad = cmdline.present("-rehad"); // Rehadronize?
+  bool lepton_veto = cmdline.value<bool>("-lveto", true); // Do lepton veto
+  bool rehad = cmdline.present("-rehad"); // Rehadronize
 
   // Instantiate event-wide, object and info files
   // file_evt stores event wide variables
@@ -130,7 +131,9 @@ int main(int argc, char** argv) {
 
       cout << "INFO: bufundamental mass is " + to_st(mphi) << endl;
 
-    init_tchannel(pythia, mphi, 0.0);
+    double pt_cut = cmdline.value<double>("-ptcut", 400.0); // phase-space cut on pthatmin to speed up MC generation
+
+    init_tchannel(pythia, mphi, pt_cut);
 
     init_hidden(pythia,
 		cmdline.value<double>("-phimass", 20.0),
@@ -373,6 +376,10 @@ int main(int argc, char** argv) {
 
       selected_leptons.push_back(celectron_v);
     }    
+
+    // Do lepton veto
+    if ((selected_leptons.size()>0) && (lepton_veto=true))
+      continue;
 
     // Loop over jets and get information
     for(int i=0; i<jets->GetEntriesFast(); i++){

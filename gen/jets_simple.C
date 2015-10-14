@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
 
       cout << "INFO: bufundamental mass is " + to_st(mphi) << endl;
 
-    double pt_cut = cmdline.value<double>("-ptcut", 400.0); // phase-space cut on pthatmin to speed up MC generation
+    double pt_cut = cmdline.value<double>("-ptcut", 1.0); // phase-space cut on pthatmin to speed up MC generation
 
     init_tchannel(pythia, mphi, pt_cut);
 
@@ -315,7 +315,7 @@ int main(int argc, char** argv) {
       cout<<"ERROR: MET pointer not found!"<<endl;
       continue;
     }
-
+    cout << "The MET is " << can->Momentum.Pt() << endl;
     // If met is too small or large, continue
     if ((can->Momentum.Pt() < met_min) || (can->Momentum.Pt() > met_max)){
       continue;
@@ -426,7 +426,7 @@ int main(int argc, char** argv) {
 
 
     //demand njets > pt_min
-    if(selected_jets.size() < njet || selected_jets[njet-1].pt() < pt_min) 
+    if(selected_jets.size() < njet || selected_jets[0].pt() < pt_min) 
       continue;
 
     if (get_dphijj(MEt, selected_jets) > dphi_max)

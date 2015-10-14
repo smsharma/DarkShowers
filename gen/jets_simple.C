@@ -313,9 +313,11 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    PseudoJet MEt
-      (-can->Momentum.Px(),-can->Momentum.Py(), 
-       0,can->Momentum.Pt());    
+    // If met is too small or large, continue
+    if ((can->Momentum.Pt() < met_min) || (can->Momentum.Pt() > met_max)){
+      continue;
+    }
+    PseudoJet MEt(-can->Momentum.Px(),-can->Momentum.Py(), 0,can->Momentum.Pt());    
     
     // Now grab the jets
     const TObjArray* jets = delphes->ImportArray

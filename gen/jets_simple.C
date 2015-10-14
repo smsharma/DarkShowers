@@ -241,13 +241,14 @@ int main(int argc, char** argv) {
 
   // Running simulation
   bool end=false;
+  
 
   while ((!m_lhe && (iEvent < nEvent)) || 
 	 (m_lhe && (iTotal < nEvent) && !end)) 
   {
     // Clear delphes
     delphes->Clear();
-
+    bool sim_failed=false;
     // If rehadronization is turned on
     if(rehad) {
       
@@ -258,13 +259,16 @@ int main(int argc, char** argv) {
       	  if(pythia.info.atEndOfFile()){
       	    cout <<"Pythia reached end of file"<<endl;
       	    end=true;
-      	    return 0;//break;     
+            sim_failed=true;
+      	    break;     
       	  }
 
   	      if (++iAbort < nAbort) continue;
   	  
       	  cerr << "ERROR: Event generation aborted prematurely, owing to error!" << endl;
-      	  return 0;//break; 
+          sim_failed=true;
+      	  break; 
+          
       	}
 	
 	    saved_event = pythia.event;
@@ -283,17 +287,19 @@ int main(int argc, char** argv) {
 	  if(pythia.info.atEndOfFile()){
 	    cout <<"Pythia reached end of file"<<endl;
 	    end=true;
-	    return 0;//break; 
+      sim_failed=true;
+	    break; 
 	  }
 	  
 	  if (++iAbort < nAbort) continue;
 	  cerr<<"ERROR: Event generation aborted due to error!" 
 	       <<endl;
-	  return 0;//break; 
+    sim_failed=true;
+	  break; 
       }
     }
 
-
+    if(sim_failed==false) continue;
     // Increment tried events
     ++iTotal;
 

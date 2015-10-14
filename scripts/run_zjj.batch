@@ -1,0 +1,15 @@
+#!/bin/sh
+#PBS -j oe
+#PBS -o /home/smsharma/scratch/job.out
+#PBS -l nodes=1:ppn=1 -l cput=10:59:00
+#PBS -q hepheno
+#PBS -m abe
+#PBS -k oe
+#PBS -M smsharma@princeton.edu
+
+cd /group/hepheno/venv
+source bin/activate
+source /group/hepheno/smsharma/Dark_Showers/env.sh
+cd /group/hepheno/smsharma/Dark_Showers/gen
+source /group/hepheno/heptools/root/bin/thisroot.sh
+./jets_simple.exe -m lhe -n 10000 -i /group/hepheno/smsharma/Dark_Showers_Data/event_1_0 -o Zjj -metmin 800

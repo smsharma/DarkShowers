@@ -299,7 +299,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    if(sim_failed==false) continue;
+    if(sim_failed==true) continue;
     // Increment tried events
     ++iTotal;
 

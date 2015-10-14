@@ -138,7 +138,8 @@ int main(int argc, char** argv) {
     init_hidden(pythia,
 		cmdline.value<double>("-phimass", 20.0),
 		cmdline.value<double>("-alpha", 10),
-		cmdline.value<double>("-inv", 0.3)
+		cmdline.value<double>("-inv", 0.3),
+    cmdline.value<bool>("-run", true)
 		);  
   }  
   

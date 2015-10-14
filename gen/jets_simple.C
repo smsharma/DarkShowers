@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
   }
 
   int nEvent = cmdline.value<int>("-n", 100);
-  int nAbort = 5;
+  int nAbort = round(0.2*nEvent);//5;
 
   // Pythia generator
   Pythia pythia;
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
 
       cout << "INFO: bufundamental mass is " + to_st(mphi) << endl;
 
-    double pt_cut = cmdline.value<double>("-ptcut", 1.0); // phase-space cut on pthatmin to speed up MC generation
+    double pt_cut = cmdline.value<double>("-ptcut", 600.0); // phase-space cut on pthatmin to speed up MC generation
 
     init_tchannel(pythia, mphi, pt_cut);
 
@@ -258,13 +258,13 @@ int main(int argc, char** argv) {
       	  if(pythia.info.atEndOfFile()){
       	    cout <<"Pythia reached end of file"<<endl;
       	    end=true;
-      	    break;    
+      	    return 0;//break;     
       	  }
 
   	      if (++iAbort < nAbort) continue;
   	  
       	  cerr << "ERROR: Event generation aborted prematurely, owing to error!" << endl;
-      	  break;
+      	  return 0;//break; 
       	}
 	
 	    saved_event = pythia.event;
@@ -283,13 +283,13 @@ int main(int argc, char** argv) {
 	  if(pythia.info.atEndOfFile()){
 	    cout <<"Pythia reached end of file"<<endl;
 	    end=true;
-	    break;    
+	    return 0;//break; 
 	  }
 	  
 	  if (++iAbort < nAbort) continue;
 	  cerr<<"ERROR: Event generation aborted due to error!" 
 	       <<endl;
-	  break;
+	  return 0;//break; 
       }
     }
 
@@ -426,7 +426,7 @@ int main(int argc, char** argv) {
 
 
     //demand njets > pt_min
-    if(selected_jets.size() < njet || selected_jets[0].pt() < pt_min) 
+    if(selected_jets.size() < njet || selected_jets[njet-1].pt() < pt_min) 
       continue;
 
     if (get_dphijj(MEt, selected_jets) > dphi_max)

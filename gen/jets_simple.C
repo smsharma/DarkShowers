@@ -60,7 +60,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-  cout<<"Usage: -m (mode) -n (nevent = 100) -o (output) -pt_min (100) -mphi (1000) -metmin (0) -phimass (default=20) -alpha (dark confinement scale) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off) -njet (2)"<<endl;
+  cout<<"Usage: -m (mode) -n (nevent = 100) -o (output) -pt_min (100) -mphi (1000) -metmin (0) -phimass (default=20) -lambda (dark confinement scale) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off) -njet (2)"<<endl;
 
   //parse input strings
   CmdLine cmdline(argc, argv);
@@ -102,7 +102,8 @@ int main(int argc, char** argv) {
   }
 
   int nEvent = cmdline.value<int>("-n", 100);
-  int nAbort = round(0.2*nEvent);//5;
+  //int nAbort = round(0.2*nEvent);//5;
+  int nAbort = 10;
 
   // Pythia generator
   Pythia pythia;
@@ -137,9 +138,12 @@ int main(int argc, char** argv) {
 
     init_hidden(pythia,
 		cmdline.value<double>("-phimass", 20.0),
-		cmdline.value<double>("-alpha", 10),
+		cmdline.value<double>("-lambda", 10),
 		cmdline.value<double>("-inv", 0.3),
-    cmdline.value<bool>("-run", true)
+		cmdline.value<bool>("-run", true),
+		cmdline.value<int>("-Nc", 2),		
+		cmdline.value<int>("-NFf", 2),		
+		cmdline.value<int>("-NBf", 0)
 		);  
   }  
   
@@ -243,6 +247,7 @@ int main(int argc, char** argv) {
   // Running simulation
   bool end=false;
   
+  int pythia_status=-1;
 
   while ((!m_lhe && (iEvent < nEvent)) || 
 	 (m_lhe && (iTotal < nEvent) && !end)) 
@@ -255,8 +260,8 @@ int main(int argc, char** argv) {
       
       // Renew an event
       if (iTotal % 5 == 0) {
-      	while (!pythia.next()) {
-	  
+      	while (!(pythia_status=pythia.next())) {
+
       	  if(pythia.info.atEndOfFile()){
       	    cout <<"Pythia reached end of file"<<endl;
       	    end=true;
@@ -272,7 +277,7 @@ int main(int argc, char** argv) {
           
       	}
 	
-	    saved_event = pythia.event;
+	saved_event = pythia.event;
       }
 
       else pythia.event = saved_event;
@@ -283,20 +288,22 @@ int main(int argc, char** argv) {
     else
     {
       // Tell pythia to run pythia.next()
-      while (!pythia.next()) {
+      while (!(pythia_status=pythia.next())) {
+
+	cout<<"Pythia failed, status "<<pythia_status<<endl;
 
 	  if(pythia.info.atEndOfFile()){
 	    cout <<"Pythia reached end of file"<<endl;
 	    end=true;
-      sim_failed=true;
+	    sim_failed=true;
 	    break; 
 	  }
 	  
 	  if (++iAbort < nAbort) continue;
 	  cerr<<"ERROR: Event generation aborted due to error!" 
 	       <<endl;
-    sim_failed=true;
-	  break; 
+	  sim_failed=true;
+	  return 1; 
       }
     }
 
@@ -322,7 +329,6 @@ int main(int argc, char** argv) {
       cout<<"ERROR: MET pointer not found!"<<endl;
       continue;
     }
-    cout << "The MET is " << can->Momentum.Pt() << endl;
     // If met is too small or large, continue
     if ((can->Momentum.Pt() < met_min) || (can->Momentum.Pt() > met_max)){
       continue;
@@ -362,9 +368,9 @@ int main(int argc, char** argv) {
         continue;
       
       PseudoJet cmuon_v(cmuon->Momentum.Px(), 
-           cmuon->Momentum.Py(),
-           cmuon->Momentum.Pz(),
-           cmuon->Momentum.E());
+			cmuon->Momentum.Py(),
+			cmuon->Momentum.Pz(),
+			cmuon->Momentum.E());
 
       selected_leptons.push_back(cmuon_v);
     }    

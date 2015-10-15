@@ -46,20 +46,30 @@ void init_tchannel(Pythia& pythia,
 
 void init_hidden(Pythia& pythia, 
 		 double mass=20.0,
-		 double alpha=1.0,
+		 double lambda=1.0,
 		 double inv = 0.3,
-		 bool run=true
+		 bool run=true,
+		 int Nc=2,
+		 int NFf=2,
+		 int NBf=0
 		 )
 {
   
-  pythia.readString("HiddenValley:Ngauge  = 2");
+  pythia.readString("HiddenValley:Ngauge  = " +
+		    to_st(Nc) );
 
   if(run){
     pythia.readString("HiddenValley:Run = on");
     pythia.readString(add_st
-		      ("HiddenValley:Lambda = ", alpha));
+		      ("HiddenValley:Lambda = ", lambda));
     
-    cout<<"running coupling: conf. scale "<<alpha<<endl;
+    cout<<"running coupling: conf. scale "<<lambda<<endl;
+
+    double b = 11./3 *Nc - 1./6. * NBf - 1./3. * NFf;
+
+    cout<<"alpha(TeV) = "
+	<<2*PI / (b*log(1000/lambda))<<endl;
+      
   }
 
   else{
@@ -67,7 +77,7 @@ void init_hidden(Pythia& pythia,
     pythia.readString("HiddenValley:Run = off");
     //change FSR strength
     pythia.readString
-      (add_st("HiddenValley:alphaFSR = ", alpha));
+      (add_st("HiddenValley:alphaFSR = ", lambda));
   }
 
   //decouple the heavy flavor state
@@ -130,11 +140,11 @@ void init_hidden(Pythia& pythia,
   
   //running for N bosonic flavor
   pythia.readString
-    (add_st("HiddenValley:NBFlavRun = ", 0));
+    (add_st("HiddenValley:NBFlavRun = ", NBf));
   
   //running for N fermionic flavor
   pythia.readString
-    (add_st("HiddenValley:NFFlavRun = ", 2));
+    (add_st("HiddenValley:NFFlavRun = ", NFf));
 
 
   //onMode bRatio meMode product1 product2
@@ -162,6 +172,10 @@ void init_hidden(Pythia& pythia,
   //spin 1 meson decay
   //democratic to all flavors
   pythia.readString("4900113:onechannel = 1 " 
+		    + to_st((1-inv)/5.)
+		      + " 91 -1 1");
+
+  pythia.readString("4900113:addchannel = 1 " 
 		    + to_st((1-inv)/5.)
 		      + " 91 -2 2");
   

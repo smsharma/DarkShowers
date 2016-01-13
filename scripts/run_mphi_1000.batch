@@ -1,7 +1,7 @@
 #!/bin/sh
 #PBS -j oe
 #PBS -o /home/smsharma/scratch/job.out
-#PBS -l nodes=1:ppn=1 -l cput=10:59:00
+#PBS -l nodes=1:ppn=1 -l cput=100:59:00
 #PBS -q hepheno
 #PBS -m abe
 #PBS -k oe
@@ -12,4 +12,4 @@ source bin/activate
 source /group/hepheno/smsharma/Dark_Showers/env.sh
 cd /group/hepheno/smsharma/Dark_Showers/gen
 source /group/hepheno/heptools/root/bin/thisroot.sh
-./jets_simple.exe -m tchannel -n 1000 -mphi 1000 -o tchannel_mchitilde_1000
+./jets_simple.exe -m tchannel -n 1000 -mphi 1000 -o tchannel_mchitilde_1000_new1 -metmin 800

@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
   
   string mode = cmdline.value<string>("-m", "tchannel"); // Run mode
   double pt_min = cmdline.value<double>("-ptmin", 100); // Min pT of all chosen leading njet jets (selected jets)
-  double met_min = cmdline.value<double>("-metmin", 800); // Min MET
+  double met_min = cmdline.value<double>("-metmin", 100); // Min MET
   double met_max = cmdline.value<double>("-metmax", 99999); // Max MET
   double dphi_max = cmdline.value<double>("-dphimax", 999); // Max dphi between jet and the selected jets
 

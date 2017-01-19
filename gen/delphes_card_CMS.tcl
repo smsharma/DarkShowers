@@ -380,9 +380,9 @@ module Isolation MuonIsolation {
 
   set DeltaRMax 0.5
 
-  set PTMin 0.01
+  set PTMin 0.5
 
-  set PTRatioMax 999.
+  set PTRatioMax 0.1
 }
 
 ###################

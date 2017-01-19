@@ -225,8 +225,8 @@ int main(int argc, char** argv) {
   // Declare Delphes variables
 
   ExRootConfReader *config = new ExRootConfReader();
-  //config->ReadFile("delphes_card_CMS.tcl");
-  config->ReadFile("delphes_card_ATLAS.tcl");
+  config->ReadFile("delphes_card_CMS.tcl");
+  //config->ReadFile("delphes_card_ATLAS.tcl");
   Delphes *delphes = new Delphes("Delphes"); 
   delphes -> SetConfReader(config);
   DelphesFactory *factory = delphes->GetFactory();

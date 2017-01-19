@@ -1,3 +1,6 @@
+# makefile
+Makefile
+
 # Event products
 *.evt
 *.obj

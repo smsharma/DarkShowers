@@ -13,14 +13,14 @@ class Data:
     def __init__(self, input, display=True, lumi=20*1000, load_data=True):
         if load_data:
             if os.path.exists(input+".evt"): self.data_ = pd.read_csv(input+".evt", sep=',',skipinitialspace=True, comment="#", index_col=('evt') ) 
-            if os.path.exists(input+".obj"): 
-                self.obj_ = pd.read_csv(input+".obj", sep=',',skipinitialspace=True, comment="#", index_col=('evt','type','n') ) 
-            if os.path.exists(input+".meta"): self.meta = pd.read_csv(input+".meta", sep=',',skipinitialspace=True, comment="#", index_col=None )
-        self.w_=np.asarray(self.meta.at[0,'cxn']*lumi/self.meta.at[0,'nevt'])
+            # if os.path.exists(input+".obj"): 
+            #     self.obj_ = pd.read_csv(input+".obj", sep=',',skipinitialspace=True, comment="#", index_col=('evt','type','n') ) 
+        #     if os.path.exists(input+".meta"): self.meta = pd.read_csv(input+".meta", sep=',',skipinitialspace=True, comment="#", index_col=None )
+        # self.w_=np.asarray(self.meta.at[0,'cxn']*lumi/self.meta.at[0,'nevt'])
         
         self.data = self.data_
-        self.obj = self.obj_
-        self.w =np.repeat(self.w_, len(self.data.index))
+        # self.obj = self.obj_
+        # self.w =np.repeat(self.w_, len(self.data.index))
         self.cuts = Cuts()
         self.lumi = lumi
         
@@ -34,8 +34,8 @@ class Data:
         else: self.data = self.data_
         evt_list = list(self.data.index)
         # evt_list = [s + 1 for s in list(self.data.index)]
-        self.obj = self.obj_.loc[evt_list]
-        self.w =np.repeat(self.w_, len(self.data.index))
+        # self.obj = self.obj_.loc[evt_list]
+        # self.w =np.repeat(self.w_, len(self.data.index))
         self.cuts = cuts
 
     def eff(self):
@@ -46,8 +46,8 @@ class Data:
         ab = 10**-6*pb;
         return self.meta['cxn'][0]*pb*(1/ab)*self.eff()
         
-    def get_obj(self, type, n=1):
-        return self.obj.xs((type, n), level=('type','n'))
+    # def get_obj(self, type, n=1):
+    #     return self.obj.xs((type, n), level=('type','n'))
 
     def etaphi_to_xyz(self,pt, mass, eta, phi):
         e = sqrt( (pt*cosh(eta))**2 + mass**2 )

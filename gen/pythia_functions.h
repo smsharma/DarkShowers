@@ -146,6 +146,10 @@ void init_hidden(Pythia& pythia,
   pythia.readString
     (add_st("HiddenValley:NFFlavRun = ", NFf));
 
+  cout << "Turning on direct production" << endl;
+
+  pythia.readString("HiddenValley:gg2UvUvbar = on");
+
 
   //onMode bRatio meMode product1 product2
   /*

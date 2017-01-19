@@ -1,7 +1,6 @@
 // Tim Lou
 // 10/04/2015
 
-
 // C++ tools
 #include <cstring>
 #include <sstream>
@@ -38,17 +37,13 @@
 // Pythia8 library to perform t-channel production
 #include "tchannel_hidden.hh"
 
-//Pythia8 library to perform higher dimensional ops
-//dim-7 GG-chichi production
+// Pythia8 library to perform higher dimensional ops
+// dim-7 GG-chichi production
 //#include "gluonportal.hh"
 
 #include "CmdLine/CmdLine.hh"
 
-//extra tools, to be simplified
-//#include "tools.h"
-
-//to simplify code
-//moving all unnecessary functions to this file
+// To simplify code moving all unnecessary functions to this file
 #include "pythia_functions.h"
 
 //using namespace Pythia8;
@@ -58,7 +53,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-  cout<<"Usage: -m (mode) -n (nevent = 100) -o (output) -pt_min (100) -mphi (1000) -metmin (0) -phimass (default=20) -lambda (dark confinement scale) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off) -njet (2)"<<endl;
+  cout<<"Usage: -m (mode) -n (nevent = 100) -o (output) -pt_min (100) -mphi (10000) -metmin (0) -phimass (default=20) -lambda (dark confinement scale) -frag (fragmentation) -inv (invisible ratio) -v (verbose) -seed (0) -rehad (off) -njet (2)"<<endl;
 
   //parse input strings
   CmdLine cmdline(argc, argv);
@@ -76,12 +71,13 @@ int main(int argc, char** argv) {
 
   // Instantiate event-wide, object and info files
   // file_evt stores event wide variables
-  // also last two line stores cxn, efficiency...etc
+  // also last two line stores cxn, efficiency etc
   ofstream file_evt;
   ofstream file_meta;
 
   string input;
 
+  // If using an external lhe file
   if (mode == "lhe")
     input = cmdline.value<string>("-i");  
   try
@@ -97,7 +93,7 @@ int main(int argc, char** argv) {
 
   int nEvent = cmdline.value<int>("-n", 1000);
   //int nAbort = round(0.2*nEvent);//5;
-  int nAbort = 10;
+  int nAbort = 10; // Abort after how many errors
 
   // Pythia generator
   Pythia pythia;
@@ -118,11 +114,11 @@ int main(int argc, char** argv) {
   if(!cmdline.present("-v"))
     pythia.readString("Print:quiet = on");
   
-  //hidden scalar production
+  // Hidden scalar production
   if (mode == "tchannel"){ 
 
     double mphi=
-      cmdline.value<double>("-mphi", 10000.0); // Bifundamental mass
+      cmdline.value<double>("-mphi", 1000.0); // Bifundamental mass
 
       cout << "INFO: bufundamental mass is " + to_st(mphi) << endl;
 
@@ -168,11 +164,9 @@ int main(int argc, char** argv) {
     pythia.readString("Beams:LHEF = "+ input);
     pythia.readString("Beams:frameType = 4");
 
-    
     pythia.readString("JetMatching:merge = on");
     pythia.readString("JetMatching:setMad = on");
     pythia.readString("JetMatching:scheme = 1");
-    
     
     pythia.readString("JetMatching:jetAlgorithm = 2");
     pythia.readString("JetMatching:exclusive = 2");
@@ -180,7 +174,6 @@ int main(int argc, char** argv) {
     
     cout<<"input: "<<"Beams:LHEF = "+input<<endl;
   } 
-  
   else
   {
     cerr<<"ERROR: mode: " << mode << " not supported, exiting..." << endl;
@@ -192,7 +185,6 @@ int main(int argc, char** argv) {
   // Fix random seed
   pythia.readString("Random:seed = " + 
 		    to_st(cmdline.value<int>("-seed", 0)));
-
   // Rehadronization turned on
   if(rehad)
     pythia.readString("HadronLevel:all = off");
@@ -207,7 +199,7 @@ int main(int argc, char** argv) {
   // Begin event loop.
   int iAbort = 0;
   
-  //event level variable
+  // Event level variable
   file_evt << "evt,MEt,pt1,dphi,"
 	   << "nj" 
 	   << endl;
@@ -226,7 +218,8 @@ int main(int argc, char** argv) {
 
   ExRootConfReader *config = new ExRootConfReader();
   config->ReadFile("delphes_card_CMS.tcl");
-  //config->ReadFile("delphes_card_ATLAS.tcl");
+  // config->ReadFile("delphes_card_ATLAS.tcl");
+
   Delphes *delphes = new Delphes("Delphes"); 
   delphes -> SetConfReader(config);
   DelphesFactory *factory = delphes->GetFactory();
@@ -250,7 +243,7 @@ int main(int argc, char** argv) {
   int evt_print = 20;
 
   // Running simulation
-  bool end=false;
+  bool end = false;
   
   int pythia_status=-1;
 
@@ -353,7 +346,7 @@ int main(int argc, char** argv) {
       ("UniqueObjectFinder/electrons");      
 
     // Demand at least two jets above pt cut
-    int njet = cmdline.value<int>("-njet", 1);
+    int njet = cmdline.value<int>("-njet", 2);
     int njet_max = cmdline.value<int>("-njetmax", 100);
 
     if(njet < 0){

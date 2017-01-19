@@ -111,3 +111,15 @@ jets_simple: $(objects) jets_simple.C tchannel_hidden.o gluonportal.o
 	-Wl,-rpath,$(DELPHES_DIR) \
 	-o jets_simple.exe
 endif
+
+
+ifeq ($(USER),sid_feynman)
+monojet: $(objects) monojet.C tchannel_hidden.o gluonportal.o
+	$(CXX) -O3 $(objects) CmdLine/CmdLine.o tchannel_hidden.o gluonportal.o monojet.C \
+	$(ROOTFLAGS) $(DELPHES_INC) \
+	-I$(PYTHIA_DIR)/include -I$(PYTHIA_DIR)/examples \
+	$(ROOT_LIB) $(DELPHES_LIB) \
+	-L$(PYTHIA_DIR)/lib -lpythia8 \
+	-Wl,-rpath,$(DELPHES_DIR) \
+	-o monojet.exe
+endif

@@ -418,7 +418,7 @@ return a.px() * b.px() + a.py() * b.py() + a.pz() * b.pz();
 double get_dphijj(const PseudoJet& met, const vector<PseudoJet>& jets){
   
   double result = 999;
-  for(int i=0; i<2 && i<jets.size(); ++i){
+  for(int i=0; i<4 && i<jets.size(); ++i){
     double t_dphi = fabs(met.phi() - jets[i].phi());
     if(t_dphi > PI)
       t_dphi = 2*PI - t_dphi;

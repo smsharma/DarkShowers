@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
   int iAbort = 0;
   
   // Event level variable
-  file_evt << "evt,MEt,pt1,dphi,"
+  file_evt << "evt,MEt,pt1,eta1,dphi,"
 	   << "nj" 
 	   << endl;
 
@@ -497,6 +497,7 @@ int main(int argc, char** argv) {
     file_evt<<iEvent<<","
 	    << MEt.pt()<<","    
 	    << selected_jets[0].pt()<<","
+	    << selected_jets[0].eta()<<","      
 	    << dphijj<<","
 	    << selected_jets.size()<<endl;
 

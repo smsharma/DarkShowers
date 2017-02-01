@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
   int iAbort = 0;
   
   // Event level variable
-  file_evt << "evt,MEt,pt1,eta1,dphi,"
+  file_evt << "evt,MEt,pt1,eta1,pt2,eta2,pt3,eta3,pt4,eta4,dphi,"
 	   << "nj" 
 	   << endl;
 
@@ -494,10 +494,32 @@ int main(int argc, char** argv) {
 
     double dphijj = get_dphijj(MEt, selected_jets);
 
+    double pt_list[4] = {0};
+    double eta_list[4] = {0};
+
+    for(int i=0; i<4; i++){
+      if(selected_jets.size() > i){
+	pt_list[i]=selected_jets[i].pt();
+	eta_list[i]=selected_jets[i].eta();	
+      }
+      else{
+	pt_list[i]=-1;
+	eta_list[i]=999;
+      }
+    }
+
+    
+
     file_evt<<iEvent<<","
 	    << MEt.pt()<<","    
-	    << selected_jets[0].pt()<<","
-	    << selected_jets[0].eta()<<","      
+	    << pt_list[0]<<","
+	    << eta_list[0]<<","      
+	    << pt_list[1]<<","
+	    << eta_list[1]<<","      
+	    << pt_list[2]<<","
+	    << eta_list[2]<<","      
+	    << pt_list[3]<<","
+	    << eta_list[3]<<","      
 	    << dphijj<<","
 	    << selected_jets.size()<<endl;
 

@@ -80,6 +80,7 @@ int main(int argc, char** argv) {
   // If using an external lhe file
   if (mode == "lhe")
     input = cmdline.value<string>("-i");  
+    cout << "using LHE mode" << endl;
   try
   {
     file_evt.open((output + ".evt").c_str());
@@ -217,8 +218,8 @@ int main(int argc, char** argv) {
   // Declare Delphes variables
 
   ExRootConfReader *config = new ExRootConfReader();
-  //config->ReadFile("delphes_card_CMS.tcl");
-  config->ReadFile("delphes_card_ATLAS.tcl");
+  config->ReadFile("delphes_card_CMS.tcl");
+  // config->ReadFile("delphes_card_ATLAS.tcl");
 
   Delphes *delphes = new Delphes("Delphes"); 
   delphes -> SetConfReader(config);
@@ -346,7 +347,7 @@ int main(int argc, char** argv) {
       ("UniqueObjectFinder/electrons");      
 
     // Demand at least two jets above pt cut
-    int njet = cmdline.value<int>("-njet", 2);
+    int njet = cmdline.value<int>("-njet", 1);
     int njet_max = cmdline.value<int>("-njetmax", 100);
 
     if(njet < 0){

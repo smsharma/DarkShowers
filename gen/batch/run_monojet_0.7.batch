@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH -N 1   # node count
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem=16gb
+#SBATCH -t 20:00:00
+##SBATCH --mail-type=begin
+##SBATCH --mail-type=end
+##SBATCH --mail-user=smsharma@princeton.edu
+#SBATCH -p hepheno
+
+cd /group/hepheno/smsharma/Dark-Showers
+source env.sh
+cd /group/hepheno/smsharma/Dark-Showers/gen
+source activate venv_py27
+
+./monojet.exe -m "lhe" -i /group/hepheno/heptools/MG5_aMC_v2_2_3/bin/DMsimp_s1_jmatched/Events/run_01/unweighted_events.lhe -metmin 500 -n 100000 -inv 0.7 -o monojet_rinv0.7

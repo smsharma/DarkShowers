@@ -9,5 +9,5 @@
 #SBATCH -p hepheno
 
 source activate venv_py27
-cd /group/hepheno/heptools/MG5_aMC_v2_2_3/bin/bkg_tt/bin/
+cd /group/hepheno/heptools/MG5_aMC_v2_2_3/bin/bkg_tt_dilep/bin/
 ./generate_events -f

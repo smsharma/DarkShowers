@@ -111,6 +111,10 @@ int main(int argc, char** argv) {
 
   bool m_lhe = false;
 
+
+  // weighted events
+  bool weighted = cmdline.present("-w");
+  
   // Check for verbose mode
   if(!cmdline.present("-v"))
     pythia.readString("Print:quiet = on");
@@ -202,8 +206,12 @@ int main(int argc, char** argv) {
   
   // Event level variable
   file_evt << "evt,MEt,pt1,eta1,pt2,eta2,pt3,eta3,pt4,eta4,dphi,"
-	   << "nj" 
-	   << endl;
+	   << "nj" ;
+
+  if(weighted)
+    file_evt << ", weight";
+
+  file_evt << endl;
 
   // Access to pythia event
   Pythia8::Event& event = pythia.event;
@@ -348,6 +356,7 @@ int main(int argc, char** argv) {
 
     // Demand at least two jets above pt cut
     int njet = cmdline.value<int>("-njet", 1);
+
     int njet_max = cmdline.value<int>("-njetmax", 100);
 
     if(njet < 0){
@@ -522,7 +531,14 @@ int main(int argc, char** argv) {
 	    << pt_list[3]<<","
 	    << eta_list[3]<<","      
 	    << dphijj<<","
-	    << selected_jets.size()<<endl;
+	    << selected_jets.size();
+
+    if(weighted){
+      file_evt << ", " << pythia.info.weight();
+    }
+
+
+    file_evt<<endl;
 
     ++iEvent;
     
@@ -549,7 +565,13 @@ int main(int argc, char** argv) {
   cout<<iEvent<<" total events"<<endl;
 
   file_meta<<"nevt, npass, eff, total, pass, "
-	   <<"ptcut, metcut, cxn, cxn_err"<<endl;
+	   <<"ptcut, metcut, cxn, cxn_err";
+
+  if(weighted)
+    file_meta << ", sum_weight";
+
+  file_meta<<endl;
+
   file_meta<<iTotal<<","<<iEvent<<","
 	   <<iEvent/double(iTotal)<<","
 	   <<iTotal<<","
@@ -557,8 +579,13 @@ int main(int argc, char** argv) {
 	   <<pt_min<<","
 	   <<met_min<<","
 	   <<pythia.info.sigmaGen()*1e9<<","
-	   <<pythia.info.sigmaErr()*1e9<<endl;
+	   <<pythia.info.sigmaErr()*1e9;
+
+  if(weighted)
+    file_meta << ", "<< pythia.info.weightSum();
+  file_meta << endl;
   
+
   //clean up
   delphes->FinishTask();
   delete delphes;

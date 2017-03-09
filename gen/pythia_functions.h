@@ -289,7 +289,7 @@ void Pythia_to_Delphes(DelphesFactory* factory,
 	    continue;
     
     Candidate* can = factory->NewCandidate();
-    can->PID = p.id();
+    can->PID = p.id() ;
     can->Status = p.statusHepMC();
     can->Charge = p.charge();
     can->Mass = p.m();
@@ -409,6 +409,31 @@ ostream& operator<< (ostream &out, Timer& mytime){
 
   return out;
 }
+
+int get_nmeson(const Pythia8::Event& evt){
+  
+  int pdgid_rho = 4900113;
+  int pdgid_meson = 4900111;
+
+  int n_meson = 0;
+  for(int i=0; i<evt.size(); ++i){
+    const Pythia8::Particle& p = evt[i];
+
+    if(abs(p.id()) != pdgid_rho &&
+       abs(p.id()) != pdgid_meson )
+      continue;
+
+
+    if(p.statusHepMC() != 83 && p.statusHepMC() != 84)
+      continue;
+    
+    n_meson ++;
+  }
+  //cout<<"total particle number: "<<n_meson<<endl;
+  return n_meson;
+
+}
+
 
 double dot3(const PseudoJet& a, const PseudoJet& b){
 return a.px() * b.px() + a.py() * b.py() + a.pz() * b.pz();

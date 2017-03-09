@@ -165,6 +165,8 @@ int main(int argc, char** argv) {
 		cmdline.value<int>("-NBf", 0)
 		);  
 
+    cout<<"reading file: "<<input<<endl;
+
     pythia.readString("Init:showChangedParticleData = off");
     pythia.readString("Beams:LHEF = "+ input);
     pythia.readString("Beams:frameType = 4");
@@ -206,7 +208,7 @@ int main(int argc, char** argv) {
   
   // Event level variable
   file_evt << "evt,MEt,pt1,eta1,pt2,eta2,pt3,eta3,pt4,eta4,dphi,"
-	   << "nj" ;
+	   << "nj,n_meson" ;
 
   if(weighted)
     file_evt << ", weight";
@@ -531,7 +533,8 @@ int main(int argc, char** argv) {
 	    << pt_list[3]<<","
 	    << eta_list[3]<<","      
 	    << dphijj<<","
-	    << selected_jets.size();
+	    << selected_jets.size()<<","
+	    << get_nmeson(event);
 
     if(weighted){
       file_evt << ", " << pythia.info.weight();

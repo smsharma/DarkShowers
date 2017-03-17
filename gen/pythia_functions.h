@@ -424,13 +424,33 @@ int get_nmeson(const Pythia8::Event& evt){
       continue;
 
 
-    if(p.statusHepMC() != 83 && p.statusHepMC() != 84)
+    if(abs(abs(p.statusHepMC())-83) > 1)
       continue;
     
     n_meson ++;
   }
   //cout<<"total particle number: "<<n_meson<<endl;
   return n_meson;
+
+}
+
+
+int get_glu(const Pythia8::Event& evt){
+  
+  int pdgid_glu = 4900991;
+
+  int n_glu = 0;
+  for(int i=0; i<evt.size(); ++i){
+    const Pythia8::Particle& p = evt[i];
+
+    if(abs(p.id()) != pdgid_glu)
+      continue;
+
+
+    n_glu ++;
+  }
+  //cout<<"total particle number: "<<n_meson<<endl;
+  return n_glu;
 
 }
 

@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
   
   // Event level variable
   file_evt << "evt,MEt,pt1,eta1,pt2,eta2,pt3,eta3,pt4,eta4,dphi,"
-	   << "nj,n_meson" ;
+	   << "nj,n_meson,n_glu" ;
 
   if(weighted)
     file_evt << ", weight";
@@ -534,7 +534,8 @@ int main(int argc, char** argv) {
 	    << eta_list[3]<<","      
 	    << dphijj<<","
 	    << selected_jets.size()<<","
-	    << get_nmeson(event);
+	    << get_nmeson(event) << ","
+	    << get_glu(event);
 
     if(weighted){
       file_evt << ", " << pythia.info.weight();

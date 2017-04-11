@@ -71,6 +71,8 @@ int main(int argc, char** argv) {
 
   // for Zprime mode
   bool Zprime = cmdline.present("-Zprime");
+  if(Zprime)
+    cout<<"INFO: Zprime mode enabled, jets will be reclustered."<<endl;
 
   // Instantiate event-wide, object and info files
   // file_evt stores event wide variables

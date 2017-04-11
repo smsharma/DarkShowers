@@ -69,6 +69,9 @@ int main(int argc, char** argv) {
   bool lepton_veto = cmdline.value<bool>("-lveto", true); // Do lepton veto
   bool rehad = cmdline.present("-rehad"); // Rehadronize
 
+  // for Zprime mode
+  bool Zprime = cmdline.present("-Zprime");
+
   // Instantiate event-wide, object and info files
   // file_evt stores event wide variables
   // also last two line stores cxn, efficiency etc
@@ -207,7 +210,7 @@ int main(int argc, char** argv) {
   int iAbort = 0;
   
   // Event level variable
-  file_evt << "evt,MEt,pt1,eta1,pt2,eta2,pt3,eta3,pt4,eta4,dphi,"
+  file_evt << "evt,MEt,Mt,pt1,eta1,pt2,eta2,pt3,eta3,pt4,eta4,dphi,"
 	   << "nj,n_meson,n_glu" ;
 
   if(weighted)
@@ -370,6 +373,14 @@ int main(int argc, char** argv) {
     vector<PseudoJet> selected_jets;
     vector<PseudoJet> selected_leptons;
     
+    //if Zprime mode, recluster into R=1.0 jets
+    if(Zprime){
+      JetDefinition jet_def(cambridge_algorithm, 1.1);
+      ClusterSequence cs(selected_jets, jet_def);
+      selected_jets = sorted_by_pt(cs.inclusive_jets());
+    }
+    
+
     // Loop over muons and get information
     for(int i=0; i<muons->GetEntriesFast(); i++){
       
@@ -521,9 +532,13 @@ int main(int argc, char** argv) {
     }
 
     
+    double Mt_ = 0;
+    if(selected_jets.size()>= 2)
+      Mt_ = (MEt+selected_jets[0]+selected_jets[1]).mperp();
 
     file_evt<<iEvent<<","
 	    << MEt.pt()<<","    
+	    << Mt_ << ","
 	    << pt_list[0]<<","
 	    << eta_list[0]<<","      
 	    << pt_list[1]<<","

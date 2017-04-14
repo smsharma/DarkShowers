@@ -11,7 +11,7 @@ mg_dir = "/group/hepheno/heptools/MG5_aMC_v2_5_2/bin/" # MadGraph directory
 
 n_jobs = 1 # Number of jobs to submit
 prefix = "DMsimp_s1" # Prefix that the MG job was generated with
-nevt_each = 500000 # Number of events in each job
+nevt_each = 200000 # Number of events in each job
 nmatch = 2 # Pythia nmatch parameter
 
 batch='''#!/bin/bash
@@ -29,7 +29,9 @@ source /group/hepheno/smsharma/Dark-Showers/env.sh
 source /group/hepheno/heptools/root/bin/thisroot.sh
 cd '''
 
-for i in [10,20,50,100]:
+# for i in [10,20,50,100]:
+# for i in [200,500,1000]:
+for i in [5]:
 	# Copy MG folder for each job
 	# os.system("cp -r " 
 	# 	+ mg_dir

@@ -17,18 +17,18 @@ source env.sh
 cd /group/hepheno/smsharma/Dark-Showers/gen
 source activate venv_py27
 
-./monojet.exe -m lhe -w -i /group/hepheno/heptools/MG5_aMC_v2_5_2/bin/DMsimp_s1_20/Events/run_01/unweighted_events.lhe -metmin 0 -n 500000 -phimass 20 -lambda 10 '''
+./monojet.exe -m lhe -w -i /group/hepheno/heptools/MG5_aMC_v2_5_2/bin/DMsimp_s1_200/Events/run_01/unweighted_events.lhe -metmin 0 -n 200000 -phimass 400 -lambda 200 -v '''
 
 # rinv_ary = np.linspace(0.1,1.,5)
 rinv_ary = [0.01,0.1,.2,.3,.4,.5,.6,.7,.8,.9, .98, 0.99, 1.0]
 
 for rinv in rinv_ary:    
     rinv_tag = "-inv " + str(rinv)
-    out_tag = "-o " + "monojet_20_rinv" + str(rinv)
+    out_tag = "-o " + "monojet_200_rinv" + str(rinv)
     tag = rinv_tag + " " + out_tag
     print tag
     batchn = batch + tag
-    fname = "batch/run_monojet_20_"+str(rinv)+".batch"
+    fname = "batch/run_monojet_200_"+str(rinv)+".batch"
     f=open(fname, "w")
     f.write(batchn)
     f.close()

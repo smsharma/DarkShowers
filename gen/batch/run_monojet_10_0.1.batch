@@ -13,4 +13,4 @@ source env.sh
 cd /group/hepheno/smsharma/Dark-Showers/gen
 source activate venv_py27
 
-./monojet.exe -m lhe -w -i /group/hepheno/heptools/MG5_aMC_v2_5_2/bin/DMsimp_s1_10/Events/run_01/unweighted_events.lhe -metmin 0 -n 500000 -phimass 10 -lambda 5 -inv 0.1 -o monojet_10_rinv0.1
+./monojet.exe -m lhe -w -i /group/hepheno/heptools/MG5_aMC_v2_5_2/bin/DMsimp_s1_10/Events/run_01/unweighted_events.lhe -metmin 0 -n 200000 -phimass 20 -lambda 10 -v  -inv 0.1 -o monojet_10_rinv0.1

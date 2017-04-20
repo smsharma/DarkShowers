@@ -212,7 +212,7 @@ int main(int argc, char** argv) {
   int iAbort = 0;
   
   // Event level variable
-  file_evt << "evt,MEt,Mt,pt1,eta1,pt2,eta2,pt3,eta3,pt4,eta4,dphi,"
+  file_evt << "evt,MEt,mjj,Mt,pt1,eta1,y1,pt2,eta2,y2,pt3,eta3,y3,pt4,eta4,y4,dphi,"
 	   << "nj,n_meson,n_glu" ;
 
   if(weighted)
@@ -375,6 +375,11 @@ int main(int argc, char** argv) {
     vector<PseudoJet> selected_jets;
     vector<PseudoJet> selected_leptons;
     
+    double mjj=0;
+    if(selected_jets.size()>=2)
+      mjj = (selected_jets[0]+selected_jets[1]).m();
+
+
     //if Zprime mode, recluster into R=1.0 jets
     if(Zprime){
       JetDefinition jet_def(cambridge_algorithm, 1.1);
@@ -521,11 +526,13 @@ int main(int argc, char** argv) {
 
     double pt_list[4] = {0};
     double eta_list[4] = {0};
+    double y_list[4] = {0};
 
     for(int i=0; i<4; i++){
       if(selected_jets.size() > i){
 	pt_list[i]=selected_jets[i].pt();
 	eta_list[i]=selected_jets[i].eta();	
+	y_list[i]=selected_jets[i].rap();
       }
       else{
 	pt_list[i]=-1;
@@ -540,15 +547,20 @@ int main(int argc, char** argv) {
 
     file_evt<<iEvent<<","
 	    << MEt.pt()<<","    
+	    << mjj <<","
 	    << Mt_ << ","
 	    << pt_list[0]<<","
 	    << eta_list[0]<<","      
+	    << y_list[0]<<","      
 	    << pt_list[1]<<","
 	    << eta_list[1]<<","      
+	    << y_list[1]<<","      
 	    << pt_list[2]<<","
 	    << eta_list[2]<<","      
+	    << y_list[2]<<","      
 	    << pt_list[3]<<","
 	    << eta_list[3]<<","      
+	    << y_list[3]<<","      
 	    << dphijj<<","
 	    << selected_jets.size()<<","
 	    << get_nmeson(event) << ","

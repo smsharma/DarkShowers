@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -N 1   # node count
 #SBATCH --ntasks-per-node=1
-#SBATCH --mem=16gb
+#SBATCH --mem=4gb
 #SBATCH -t 20:00:00
 ##SBATCH --mail-type=begin
 ##SBATCH --mail-type=end
@@ -13,4 +13,4 @@ source env.sh
 cd /group/hepheno/smsharma/Dark-Showers/gen
 source activate venv_py27
 
-./monojet.exe -m "lhe" -w -i /group/hepheno/heptools/MG5_aMC_v2_5_2/bin/bkg_Zj/Events/run_01/unweighted_events.lhe -metmin 0 -n 200000 -o bkg_Zj -nmatch 2
+./monojet.exe -m "lhe" -w -i /group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/bkg_Zj/Events/run_01/unweighted_events.lhe -metmin 0 -Zprime -n 200000 -o bkg_Zj -nmatch 2

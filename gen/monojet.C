@@ -375,18 +375,6 @@ int main(int argc, char** argv) {
     vector<PseudoJet> selected_jets;
     vector<PseudoJet> selected_leptons;
     
-    double mjj=0;
-    if(selected_jets.size()>=2)
-      mjj = (selected_jets[0]+selected_jets[1]).m();
-
-
-    //if Zprime mode, recluster into R=1.0 jets
-    if(Zprime){
-      JetDefinition jet_def(cambridge_algorithm, 1.1);
-      ClusterSequence cs(selected_jets, jet_def);
-      selected_jets = sorted_by_pt(cs.inclusive_jets());
-    }
-    
 
     // Loop over muons and get information
     for(int i=0; i<muons->GetEntriesFast(); i++){
@@ -447,6 +435,22 @@ int main(int argc, char** argv) {
       //store the jets
       selected_jets.push_back(cjet_v);
     }
+
+
+
+    double mjj=0;
+    if(selected_jets.size()>=2){
+      mjj = (selected_jets[0]+selected_jets[1]).m();
+    }
+
+    //if Zprime mode, recluster into R=1.0 jets
+    if(Zprime){
+      JetDefinition jet_def(cambridge_algorithm, 1.1);
+      ClusterSequence cs(selected_jets, jet_def);
+      selected_jets = sorted_by_pt(cs.inclusive_jets());
+    }
+    
+
 
     //demand njets > pt_min
     if(selected_jets.size() < njet || selected_jets[0].pt() < pt_min || 

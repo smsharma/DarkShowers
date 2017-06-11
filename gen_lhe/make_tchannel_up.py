@@ -6,18 +6,19 @@ Pythia script.
 
 import sys, os
 import random
+import numpy as np
 
 mg_dir = "/group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/" # MadGraph directory
 
 n_jobs = 1 # Number of jobs to submit
 prefix = "tch_associated_up" # Prefix that the MG job was generated with
-nevt_each = 200000 # Number of events in each job
+nevt_each = 50000 # Number of events in each job
 nmatch = 2 # Pythia nmatch parameter
 
 batch='''#!/bin/bash
 #SBATCH -N 1   # node count
-#SBATCH --ntasks-per-node=1
-#SBATCH --mem=16gb
+#SBATCH --ntasks-per-node=16
+#SBATCH --mem=4gb
 #SBATCH -t 16:00:00
 ##SBATCH --mail-type=begin
 ##SBATCH --mail-type=end
@@ -31,18 +32,22 @@ cd '''
 
 # for i in [10,20,50,100]:
 # for i in [200,500,1000]:
-for i in [500,1000,5000,8000]:
+# for i in [500,1000,5000,8000]:
+masses = np.arange(300,1000,50)
+# masses = [4000]
+for i in masses:
 	# Copy MG folder for each job
-	# os.system("cp -r " 
-	# 	+ mg_dir
-	# 	+ prefix + " "
-	# 	+ mg_dir
-	# 	+ prefix + "_" + str(i))
+	os.system("cp -r " 
+		+ mg_dir
+		+ prefix + " "
+		+ mg_dir
+		+ prefix + "_" + str(i))
 	batchn = batch + mg_dir + prefix + "_" + str(i) + "/bin/\n" # Go to appropriate MG folder
 	seed = random.randrange(0,123120) # Random seed
 	batchn += "rm -r "+ mg_dir + prefix+"_" + str(i) +"/Events/run_01\n" # Change seed in MG run card
 	batchn += "sed -i 's/0	= iseed/"+str(seed)+"   = iseed/g' ../Cards/run_card.dat\n" # Change seed in MG run card
 	batchn += "sed -i 's/20	= nevents/"+str(nevt_each)+" = nevents/g' ../Cards/run_card.dat\n" # Change events in MG run card
+	batchn += "sed -i 's/<mass>/"+str(i)+"/g' ../Cards/param_card.dat\n" # Change seed in MG run card
 	batchn += "rm -r " + mg_dir + prefix + "_" + str(i) + "/RunWeb\n" # Remove random dumb file
 	batchn += "./generate_events -f\n" # Generate Pythia events
 	batchn += "gunzip " + mg_dir + prefix+"_" + str(i) +"/Events/run_01/unweighted_events.lhe.gz\n" # Unzip created LHE file

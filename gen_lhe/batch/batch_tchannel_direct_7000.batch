@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH -N 1   # node count
+#SBATCH --ntasks-per-node=16
+#SBATCH --mem=16gb
+#SBATCH -t 16:00:00
+##SBATCH --mail-type=begin
+##SBATCH --mail-type=end
+##SBATCH --mail-user=smsharma@princeton.edu
+#SBATCH -p dept
+source /opt/rh/devtoolset-3/enable
+source activate venv_py27
+source /group/hepheno/smsharma/Dark-Showers/env.sh
+source /group/hepheno/heptools/root/bin/thisroot.sh
+cd /group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/tchannel_direct_7000/bin/
+sed -i 's/<PhiMass>/7000/g' ../Cards/param_card.dat
+sed -i 's/0   = iseed/40320   = iseed/g' ../Cards/run_card.dat
+sed -i 's/10000 = nevents/50000 = nevents/g' ../Cards/run_card.dat
+rm -r /group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/tchannel_direct_7000/RunWeb
+./generate_events -f
+gunzip /group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/tchannel_direct_7000/Events/run_01/unweighted_events.lhe.gz
+sed -i 's/49001010/4900101/g' ../Events/run_01/unweighted_events.lhe
+sed -i 's/49001011/4900101/g' ../Events/run_01/unweighted_events.lhe
+sed -i 's/49001012/4900101/g' ../Events/run_01/unweighted_events.lhe
+sed -i 's/49001013/4900101/g' ../Events/run_01/unweighted_events.lhe
+sed -i 's/49001014/4900101/g' ../Events/run_01/unweighted_events.lhe

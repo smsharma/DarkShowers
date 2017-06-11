@@ -23,11 +23,12 @@ source activate venv_py27
 rinv_ary = [0.01,0.1,.2,.3,.4,.5,.6,.7,.8,.9, .98, 0.99, 1.0]
 
 # for MZp in [500, 1000, 3000]:
-for MZp in [500,1000,5000,8000]:
+masses = np.arange(300,1000,50)
+for MZp in masses:
     for rinv in rinv_ary:    
         fname_tag = "/group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/tch_associated_up_" + str(MZp) + "/Events/run_01/unweighted_events.lhe -metmin 0 -n 200000 -phimass 10 -lambda 5 -v "
         rinv_tag = "-inv " + str(rinv)
-        out_tag = "-o " + "tchannel_up_"+str(MZp)+"_rinv" + str(rinv)
+        out_tag = "-o " + "tchannelEventsAssoc/tchannel_up_"+str(MZp)+"_rinv" + str(rinv)
         tag = fname_tag + " " + rinv_tag + " " + out_tag
         print tag
         batchn = batch + tag

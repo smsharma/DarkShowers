@@ -30,8 +30,8 @@ source /group/hepheno/heptools/root/bin/thisroot.sh
 cd '''
 
 # for i in [10,20,50,100]:
-# for i in [200,500,1000]:
-for i in [5]:
+for i in [200,500,1000]:
+# for i in [5]:
 	# Copy MG folder for each job
 	# os.system("cp -r " 
 	# 	+ mg_dir

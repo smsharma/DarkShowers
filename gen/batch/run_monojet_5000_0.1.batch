@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -N 1   # node count
 #SBATCH --ntasks-per-node=1
-#SBATCH --mem=4gb
-#SBATCH -t 20:00:00
+#SBATCH --mem=3gb
+#SBATCH -t 2:00:00
 ##SBATCH --mail-type=begin
 ##SBATCH --mail-type=end
 ##SBATCH --mail-user=smsharma@princeton.edu
@@ -13,4 +13,4 @@ source env.sh
 cd /group/hepheno/smsharma/Dark-Showers/gen
 source activate venv_py27
 
-./monojet.exe -m lhe -Zprime -w -i /group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/tch_associated_down_5000/Events/run_01/unweighted_events.lhe -metmin 0 -n 200000 -phimass 10 -lambda 5 -v  -inv 0.1 -o tchannel_down_5000_rinv0.1
+./monojet.exe -m lhe -w -i /group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/tchannel_direct_test_5000/Events/run_01/unweighted_events.lhe -metmin 0 -n 200000 -phimass 10 -lambda 5 -v  -inv 0.1 -o tChannelDirect/tchannel_M5000_rinv0.1

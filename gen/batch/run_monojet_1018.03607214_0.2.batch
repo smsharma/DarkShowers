@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH -N 1   # node count
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem=4gb
+#SBATCH -t 20:00:00
+##SBATCH --mail-type=begin
+##SBATCH --mail-type=end
+##SBATCH --mail-user=smsharma@princeton.edu
+#SBATCH -p dept
+
+cd /group/hepheno/smsharma/Dark-Showers
+source env.sh
+cd /group/hepheno/smsharma/Dark-Showers/gen
+source activate venv_py27
+
+./monojet.exe -m lhe -w -i /group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/DM_Zprime_1018.03607214/Events/run_01/unweighted_events.lhe -metmin 0 -n 100000 -phimass 10 -lambda 5 -v  -inv 0.2 -o ZprimeNoZprime/ZprimeNoZprime_M1018.03607214_rinv0.2

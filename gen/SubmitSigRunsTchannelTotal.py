@@ -17,23 +17,24 @@ source env.sh
 cd /group/hepheno/smsharma/Dark-Showers/gen
 source activate venv_py27
 
-./monojet.exe -m lhe -w -Zprime -i '''
+./monojet.exe -m lhe -w -i '''
 
 # rinv_ary = np.linspace(0.1,1.,5)
-rinv_ary = [0.01,0.1,.2,.3,.4,.5,.6,.7,.8,.9, .98, 0.99, 1.0]
+# rinv_ary = [0.0, 0.01,0.1,.2,.3,.4,.5,.6,.7,.8,.9, 0.99, 1.0]
+rinv_ary = [.01, .3, .6, 1.]
 
 # for MZp in [500, 1000, 3000]:
 # for MZp in [500,1000,5000,8000]:
 # masses = np.arange(2500,4500,500)
 # for i in :
-# masses = [500,1000,2000,3000,4000,5000,7000,10000,20000,50000,100000]
 masses = [100000]
-masses = [500,1000,2000,3000,4000]
+# masses = [100000]
+# masses = [500,1000,2000,3000,4000]
 for MZp in masses:
     for rinv in rinv_ary:    
-        fname_tag = "/group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/tchannel_total_test_" + str(MZp) + "/Events/run_01/unweighted_events.lhe -metmin 0 -n 200000 -phimass 10 -lambda 5 -v "
+        fname_tag = "/group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/tchannel_wtf_pp_" + str(MZp) + "/Events/run_02/unweighted_events.lhe -metmin 0 -n 200000 -phimass 10 -lambda 5 -v "
         rinv_tag = "-inv " + str(rinv)
-        out_tag = "-o " + "tChannelDirect/tchannel_total_M"+str(MZp)+"_rinv" + str(rinv)
+        out_tag = "-o " + "tChannelDirectFinal/tchannel_direct_M"+str(MZp)+"_rinv" + str(rinv)
         tag = fname_tag + " " + rinv_tag + " " + out_tag
         print tag
         batchn = batch + tag

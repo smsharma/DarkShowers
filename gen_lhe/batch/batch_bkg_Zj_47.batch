@@ -11,5 +11,12 @@ source /opt/rh/devtoolset-3/enable
 source activate venv_py27
 source /group/hepheno/smsharma/Dark-Showers/env.sh
 source /group/hepheno/heptools/root/bin/thisroot.sh
-cd /group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_2/bin/bkg_Zj
-./run.sh 5000 29
+cd /group/hepheno/smsharma/Dark-Showers//MG5_aMC_v2_5_5/bin/bkg_Zj
+mkdir gridpack_137
+cp -r ./run.sh madevent gridpack_137
+cd gridpack_137
+rm madevent/RunWeb
+./run.sh 5000 137
+gunzip /group/hepheno/smsharma/Dark-Showers//MG5_aMC_v2_5_5/bin/bkg_Zj/gridpack_137/events.lhe.gz
+cd /group/hepheno/smsharma/Dark-Showers//gen/
+./monojet.exe -m lhe -w -i /group/hepheno/smsharma/Dark-Showers//MG5_aMC_v2_5_5/bin/bkg_Zj/gridpack_137/events.lhe -metmin 0   -n 5000 -o /group/hepheno/smsharma/Dark-Showers//data/bkg_Zj/events_47 -nmatch 2

@@ -1,0 +1,123 @@
+Can't read /etc/scl/prefixes/rh-java-common, rh-java-common is probably not installed.
+/var/spool/slurmd/job275201/slurm_script: line 14: cd: /group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_6_patch_signalsig_tchannel: No such file or directory
+mkdir: cannot create directory `/tmp/sid_tmp/': File exists
+rm: cannot remove `RunWeb': No such file or directory
+No module named madgraph
+Running MG5 in debug mode
+************************************************************
+*                                                          *
+*                      W E L C O M E to                    *
+*             M A D G R A P H 5 _ a M C @ N L O            *
+*                      M A D E V E N T                     *
+*                                                          *
+*                 *                       *                *
+*                   *        * *        *                  *
+*                     * * * * 5 * * * *                    *
+*                   *        * *        *                  *
+*                 *                       *                *
+*                                                          *
+*         VERSION 2.5.5                 20xx-xx-xx         *
+*                                                          *
+*    The MadGraph5_aMC@NLO Development Team - Find us at   *
+*    https://server06.fynu.ucl.ac.be/projects/madgraph     *
+*                                                          *
+*               Type 'help' for in-line help.              *
+*                                                          *
+************************************************************
+INFO: load configuration from /tmp/sid_tmp/MG5_aMC_v2_5_6_patch_signal_sig_tchannel_500_1/bin/sig_tchannel/Cards/me5_configuration.txt  
+INFO: load configuration from /group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_6_patch/input/mg5_configuration.txt  
+INFO: load configuration from /tmp/sid_tmp/MG5_aMC_v2_5_6_patch_signal_sig_tchannel_500_1/bin/sig_tchannel/Cards/me5_configuration.txt  
+No valid eps viewer found. Please set in ./input/mg5_configuration.txt
+No valid web browser found. Please set in ./input/mg5_configuration.txt
+generate_events -f
+INFO: Computing the width set on auto in the param_card.dat 
+INFO: load particles 
+INFO: load vertices 
+INFO: Change particles name to pass to MG5 convention 
+************************************************************
+*                                                          *
+*                     W E L C O M E to                     *
+*              M A D G R A P H 5 _ a M C @ N L O           *
+*                                                          *
+*                                                          *
+*                 *                       *                *
+*                   *        * *        *                  *
+*                     * * * * 5 * * * *                    *
+*                   *        * *        *                  *
+*                 *                       *                *
+*                                                          *
+*         VERSION 2.5.5                 2017-05-26         *
+*                                                          *
+*    The MadGraph5_aMC@NLO Development Team - Find us at   *
+*    https://server06.fynu.ucl.ac.be/projects/madgraph     *
+*                            and                           *
+*            http://amcatnlo.web.cern.ch/amcatnlo/         *
+*                                                          *
+*               Type 'help' for in-line help.              *
+*           Type 'tutorial' to learn how MG5 works         *
+*    Type 'tutorial aMCatNLO' to learn how aMC@NLO works   *
+*    Type 'tutorial MadLoop' to learn how MadLoop works    *
+*                                                          *
+************************************************************
+load MG5 configuration from ../../../../../group/hepheno/smsharma/Dark-Showers/MG5_aMC_v2_5_6_patch/input/mg5_configuration.txt 
+fastjet-config does not seem to correspond to a valid fastjet-config executable (v3+). We will use fjcore instead.
+ Please set the 'fastjet'variable to the full (absolute) /PATH/TO/fastjet-config (including fastjet-config).
+ MG5_aMC> set fastjet /PATH/TO/fastjet-config
+
+lhapdf-config does not seem to correspond to a valid lhapdf-config executable. 
+Please set the 'lhapdf' variable to the (absolute) /PATH/TO/lhapdf-config (including lhapdf-config).
+Note that you can still compile and run aMC@NLO with the built-in PDFs
+ MG5_aMC> set lhapdf /PATH/TO/lhapdf-config
+
+No valid eps viewer found. Please set in ./input/mg5_configuration.txt
+No valid web browser found. Please set in ./input/mg5_configuration.txt
+set automatic_html_opening False --no_save
+compute_widths 9000005 9000006 9000007 9000008 9000009 9000010 9000011 9000012 9000013 9000014 9000015 9000016 9000017 9000018 9000019 9000020 9000021 9000022 9000023 9000024 9000025 9000026 9000027 9000028 --precision_channel=0.01 --body_decay=4.0025 --path=/tmp/sid_tmp/MG5_aMC_v2_5_6_patch_signal_sig_tchannel_500_1/bin/sig_tchannel/Cards/param_card.dat --output=/tmp/sid_tmp/MG5_aMC_v2_5_6_patch_signal_sig_tchannel_500_1/bin/sig_tchannel/Cards/param_card.dat
+[1;34mPlease note that the automatic computation of the width is
+    only valid in narrow-width approximation and at tree-level.[0m
+INFO: Get two body decay from FeynRules formula 
+Results written to /tmp/sid_tmp/MG5_aMC_v2_5_6_patch_signal_sig_tchannel_500_1/bin/sig_tchannel/Cards/param_card.dat
+INFO: get decay diagram for sd11 
+Vertexlist of this model has not been searched.Automatically run the model.find_vertexlist()
+Found 6 stable particles
+INFO: get decay diagram for sd12 
+INFO: get decay diagram for sd21 
+INFO: get decay diagram for sd22 
+INFO: get decay diagram for ss11 
+INFO: get decay diagram for ss12 
+INFO: get decay diagram for ss21 
+INFO: get decay diagram for ss22 
+INFO: get decay diagram for sb11 
+INFO: get decay diagram for sb12 
+INFO: get decay diagram for sb21 
+INFO: get decay diagram for sb22 
+INFO: get decay diagram for su11 
+INFO: get decay diagram for su12 
+INFO: get decay diagram for su21 
+INFO: get decay diagram for su22 
+INFO: get decay diagram for sc11 
+INFO: get decay diagram for sc12 
+INFO: get decay diagram for sc21 
+INFO: get decay diagram for sc22 
+INFO: get decay diagram for st11 
+INFO: get decay diagram for st12 
+INFO: get decay diagram for st21 
+INFO: get decay diagram for st22 
+No decay is found
+No need for N body-decay (N>2). Results are in /tmp/sid_tmp/MG5_aMC_v2_5_6_patch_signal_sig_tchannel_500_1/bin/sig_tchannel/Cards/param_card.dat
+Generating 5000 events with run name run_04
+survey  run_04 
+INFO: compile directory 
+[1;34mNot able to open file /tmp/sid_tmp/MG5_aMC_v2_5_6_patch_signal_sig_tchannel_500_1/bin/sig_tchannel/crossx.html since no program configured.Please set one in ./input/mg5_configuration.txt[0m
+compile Source Directory
+Using random number seed offset = 11398
+INFO: Running Survey 
+Creating Jobs
+Working on SubProcesses
+INFO:     P3_gg_gv11gv11xqq  
+INFO:     P3_gg_gv11gv11xttx  
+INFO:     P3_gg_gv11gv11xbbx  
+INFO:     P3_gg_gv12gv12xqq  
+INFO:     P3_gg_gv12gv12xttx  
+INFO:     P3_gg_gv12gv12xbbx  
+slurmstepd: error: *** JOB 275201 ON node116 CANCELLED AT 2017-06-16T11:41:14 ***

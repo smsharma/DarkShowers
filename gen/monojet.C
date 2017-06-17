@@ -33,6 +33,8 @@
 // Pythia
 #include "Pythia8/Pythia.h"
 #include "Pythia8Plugins/CombineMatchingInput.h" //  Matching not implemented yet
+#include "Pythia8Plugins/HepMC2.h"
+
 
 // Pythia8 library to perform t-channel production
 #include "tchannel_hidden.hh"
@@ -104,6 +106,10 @@ int main(int argc, char** argv) {
   // Pythia generator
   Pythia pythia;
 
+  // Interface for conversion from Pythia8::Event to HepMC one.
+  HepMC::Pythia8ToHepMC ToHepMC;
+  HepMC::IO_GenEvent *ascii_io;
+
   // Initialization for LHC
   pythia.readString("Beams:eCM = " + 
 	   to_st(cmdline.value<int>("-ECM", 13000)));
@@ -123,7 +129,20 @@ int main(int argc, char** argv) {
   // Check for verbose mode
   if(!cmdline.present("-v"))
     pythia.readString("Print:quiet = on");
+
+  string hepmc_file;
+  bool hepmc=false;
+  if(cmdline.present("-hepmc")){
+    cout<<"HepMC output specified"<<endl;
+    hepmc_file=cmdline.value<string>("-hepmc", "out.hepmc");
+    hepmc=true;
+    ascii_io=new HepMC::IO_GenEvent(hepmc_file.c_str(), std::ios::out);
+  }
   
+  pythia.readString("Print:quiet = on");
+  
+
+
   // Hidden scalar production
   if (mode == "tchannel"){ 
 
@@ -223,6 +242,9 @@ int main(int argc, char** argv) {
   // Access to pythia event
   Pythia8::Event& event = pythia.event;
   Pythia8::Event saved_event;
+
+  // create HepMC files
+  HepMC::GenEvent* hepmcevt;
 
   int iEvent = 0;
   int iTotal = 0;
@@ -324,6 +346,17 @@ int main(int argc, char** argv) {
     if(sim_failed==true) continue;
     // Increment tried events
     ++iTotal;
+
+    
+    //fill hepmc pointers, and write files
+    if(hepmc)
+      hepmcevt = new HepMC::GenEvent();
+    ToHepMC.fill_next_event( pythia, hepmcevt );
+    (*ascii_io) << hepmcevt;
+    delete hepmcevt;
+
+    
+
 
     // Now process through Delphes
     Pythia_to_Delphes(factory, stable, event);
@@ -633,6 +666,8 @@ int main(int argc, char** argv) {
   // Done.
   file_evt.close();
   //file_obj.close();
+
+  delete ascii_io;
   return 0;
 
 }

@@ -46,7 +46,7 @@
 #include "CmdLine/CmdLine.hh"
 
 // To simplify code moving all unnecessary functions to this file
-#include "pythia_functions.h"
+#include "pythia_functions_update.h"
 
 //using namespace Pythia8;
 using namespace fastjet;
@@ -128,6 +128,7 @@ int main(int argc, char** argv) {
   // Check for verbose mode
   if(!cmdline.present("-v"))
     pythia.readString("Print:quiet = on");
+
 
   string hepmc_file;
   bool hepmc=false;

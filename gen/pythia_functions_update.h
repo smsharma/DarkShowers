@@ -170,13 +170,14 @@ void init_hidden(Pythia& pythia,
   //spin 1 diagonal
   pythia.readString(add_st("4900113:m0 = ", mass));
 
+  /*
   pythia.readString
     (add_st("4900101:mWidth = ", mass/100));
   pythia.readString
     (add_st("4900101:mMin = ", mass/2 - mass/100));
   pythia.readString
     (add_st("4900101:mMax = ", mass/2 + mass/100));
-
+  */
   
   //this fixes the qv to be spin 1/2
   //change to 1 for spin zero
@@ -192,11 +193,6 @@ void init_hidden(Pythia& pythia,
   //hence each DM is slightly less than half of 
   //diagonal meson mass
 
-  //spin 0 charged (DM)
-  pythia.readString(add_st("4900211:m0 = ", mass/2.0-0.01));
-  //spin 1 charged (DM)
-  pythia.readString(add_st("4900213:m0 = ", mass/2.0-0.01));
- 
   //stop showering when pt less than threshold
   pythia.readString
     (add_st("HiddenValley:pTminFSR = ", mass));
@@ -223,55 +219,6 @@ void init_hidden(Pythia& pythia,
 
   setvis_scalar(pythia, 4900211, inv);
   setvis_vector(pythia, 4900213, inv);
-
-  pythia.readString("4900111:onechannel = 1 " 
-		    + to_st(1.0-inv)
-		    + " 91 -3 3");
-
-  //invisible ratio
-  //proportion ~inv of the time 
-  //the meson is invisible
-  
-
-  pythia.readString("4900111:addchannel = 1 " 
-		    + to_st(inv)
-		    + " 0 12 -12");
-
-  //spin 1 meson decay
-  //democratic to all flavors
-  pythia.readString("4900113:onechannel = 1 " 
-		    + to_st((1-inv)/5.)
-		      + " 91 -1 1");
-
-  pythia.readString("4900113:addchannel = 1 " 
-		    + to_st((1-inv)/5.)
-		      + " 91 -2 2");
-  
-  pythia.readString("4900113:addchannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -3 3");
-
-  pythia.readString("4900113:addchannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -4 4");
-  
-  pythia.readString("4900113:addchannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -5 5");
-  
-  //spin 1 invisible ratio
-  pythia.readString("4900113:addchannel = 1 " 
-		    + to_st(inv)
-		    + " 0 4900213 -4900213");
-  
-  //can also decay into 3 gluons through loops
-  //should be seriously suppressed, commented
-  //out for future references
-  
-  /*
-  pythia.readString("4900113:onechannel = 1 1 92 21 21 21");
-  pythia.readString("4900113:onechannel = 1 1 92 21 21 21");
-  */
 
   //1:3 ratio for producing spin1 vectors
   pythia.readString
@@ -479,17 +426,22 @@ int get_nmeson(const Pythia8::Event& evt){
   int pdgid_rho = 4900113;
   int pdgid_meson = 4900111;
 
+  int pdgid_rho_off = 4900213;
+  int pdgid_meson_off = 4900211;
+
   int n_meson = 0;
   for(int i=0; i<evt.size(); ++i){
     const Pythia8::Particle& p = evt[i];
 
     if(abs(p.id()) != pdgid_rho &&
-       abs(p.id()) != pdgid_meson )
+       abs(p.id()) != pdgid_meson && 
+       abs(p.id()) != pdgid_rho_off && 
+       abs(p.id()) != pdgid_meson_off )
       continue;
 
 
-    if(abs(abs(p.statusHepMC())-83) > 1)
-      continue;
+    //if(abs(abs(p.statusHepMC())-83) > 1)
+    //  continue;
     
     n_meson ++;
   }

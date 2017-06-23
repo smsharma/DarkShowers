@@ -121,7 +121,8 @@ int main(int argc, char** argv) {
   */
 
   bool m_lhe = false;
-  
+
+
   // weighted events
   bool weighted = cmdline.present("-w");
   
@@ -139,10 +140,33 @@ int main(int argc, char** argv) {
     ascii_io=new HepMC::IO_GenEvent(hepmc_file.c_str(), std::ios::out);
   }
   
-  pythia.readString("Print:quiet = on");
-
   
-  if(mode == "lhe"){
+
+
+  // Hidden scalar production
+  if (mode == "tchannel"){ 
+
+    double mphi=
+      cmdline.value<double>("-mphi", 1000.0); // Bifundamental mass
+
+      cout << "INFO: bufundamental mass is " + to_st(mphi) << endl;
+
+      double pt_cut = cmdline.value<double>("-ptcut", 600.0); // phase-space cut on pthatmin to speed up MC generation
+
+    init_tchannel(pythia, mphi, pt_cut);
+
+    init_hidden(pythia,
+    cmdline.value<double>("-phimass", 20.0),
+    cmdline.value<double>("-lambda", 10),
+    cmdline.value<double>("-inv", 0.3),
+    cmdline.value<bool>("-run", true),
+    cmdline.value<int>("-Nc", 2),   
+    cmdline.value<int>("-NFf", 2),    
+    cmdline.value<int>("-NBf", 0)
+    );  
+  }  
+  
+  else if(mode == "lhe"){
     //read lhe file
     m_lhe=true;
     
@@ -327,11 +351,11 @@ int main(int argc, char** argv) {
     //fill hepmc pointers, and write files
     if(hepmc){
       hepmcevt = new HepMC::GenEvent();
-
-    ToHepMC.fill_next_event( pythia, hepmcevt );
-    (*ascii_io) << hepmcevt;
-    delete hepmcevt;
+      ToHepMC.fill_next_event( pythia, hepmcevt );
+      (*ascii_io) << hepmcevt;
+      delete hepmcevt;
     }
+
     
 
 

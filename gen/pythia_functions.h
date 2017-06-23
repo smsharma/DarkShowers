@@ -412,24 +412,34 @@ ostream& operator<< (ostream &out, Timer& mytime){
 
 int get_nmeson(const Pythia8::Event& evt){
   
-  int pdgid_rho = 4900113;
-  int pdgid_meson = 4900111;
+  int pdgid_rho = 4900213;
+  int pdgid_meson = 4900211;
+
+  // int pdgid_rho = 4900113;
+  // int pdgid_meson = 4900111;
 
   int n_meson = 0;
   for(int i=0; i<evt.size(); ++i){
     const Pythia8::Particle& p = evt[i];
 
-    if(abs(p.id()) != pdgid_rho &&
-       abs(p.id()) != pdgid_meson )
-      continue;
+
+    if(((abs(p.id()) == pdgid_rho) ||
+       (abs(p.id()) == pdgid_meson)) && (p.statusHepMC() == 1) ){
+      // cout << "pdgid " << p.id() << " status " << p.statusHepMC() << endl;    
+      n_meson ++;
+    }
+
+    // if(abs(p.id()) != pdgid_rho &&
+    //    abs(p.id()) != pdgid_meson )
+    //   continue;
 
 
-    if(abs(abs(p.statusHepMC())-83) > 1)
-      continue;
+    // if(abs(abs(p.statusHepMC())-83) > 1)
+    //   continue;
     
-    n_meson ++;
+    
   }
-  //cout<<"total particle number: "<<n_meson<<endl;
+  cout<<"total particle number: "<<n_meson<<endl;
   return n_meson;
 
 }

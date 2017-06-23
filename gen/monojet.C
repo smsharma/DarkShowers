@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 
   // Initialization for LHC
   pythia.readString("Beams:eCM = " + 
-	   to_st(cmdline.value<int>("-ECM", 13000)));
+     to_st(cmdline.value<int>("-ECM", 13000)));
 
   // Custom Higgs pT cut
   /*
@@ -121,8 +121,7 @@ int main(int argc, char** argv) {
   */
 
   bool m_lhe = false;
-
-
+  
   // weighted events
   bool weighted = cmdline.present("-w");
   
@@ -140,33 +139,10 @@ int main(int argc, char** argv) {
     ascii_io=new HepMC::IO_GenEvent(hepmc_file.c_str(), std::ios::out);
   }
   
+  pythia.readString("Print:quiet = on");
+
   
-
-
-  // Hidden scalar production
-  if (mode == "tchannel"){ 
-
-    double mphi=
-      cmdline.value<double>("-mphi", 1000.0); // Bifundamental mass
-
-      cout << "INFO: bufundamental mass is " + to_st(mphi) << endl;
-
-      double pt_cut = cmdline.value<double>("-ptcut", 600.0); // phase-space cut on pthatmin to speed up MC generation
-
-    init_tchannel(pythia, mphi, pt_cut);
-
-    init_hidden(pythia,
-		cmdline.value<double>("-phimass", 20.0),
-		cmdline.value<double>("-lambda", 10),
-		cmdline.value<double>("-inv", 0.3),
-		cmdline.value<bool>("-run", true),
-		cmdline.value<int>("-Nc", 2),		
-		cmdline.value<int>("-NFf", 2),		
-		cmdline.value<int>("-NBf", 0)
-		);  
-  }  
-  
-  else if(mode == "lhe"){
+  if(mode == "lhe"){
     //read lhe file
     m_lhe=true;
     
@@ -180,14 +156,14 @@ int main(int argc, char** argv) {
     pythia.setUserHooksPtr(matching);
 
     init_hidden(pythia,
-		cmdline.value<double>("-phimass", 20.0),
-		cmdline.value<double>("-lambda", 10),
-		cmdline.value<double>("-inv", 0.3),
-		cmdline.value<bool>("-run", true),
-		cmdline.value<int>("-Nc", 2),		
-		cmdline.value<int>("-NFf", 2),		
-		cmdline.value<int>("-NBf", 0)
-		);  
+    cmdline.value<double>("-phimass", 20.0),
+    cmdline.value<double>("-lambda", 10),
+    cmdline.value<double>("-inv", 0.3),
+    cmdline.value<bool>("-run", true),
+    cmdline.value<int>("-Nc", 2),   
+    cmdline.value<int>("-NFf", 2),    
+    cmdline.value<int>("-NBf", 0)
+    );  
 
     cout<<"reading file: "<<input<<endl;
 
@@ -215,7 +191,7 @@ int main(int argc, char** argv) {
   pythia.readString("Random:setSeed = on");
   // Fix random seed
   pythia.readString("Random:seed = " + 
-		    to_st(cmdline.value<int>("-seed", 0)));
+        to_st(cmdline.value<int>("-seed", 0)));
   // Rehadronization turned on
   if(rehad)
     pythia.readString("HadronLevel:all = off");
@@ -232,7 +208,7 @@ int main(int argc, char** argv) {
   
   // Event level variable
   file_evt << "evt,MEt,mjj,Mt,pt1,eta1,y1,pt2,eta2,y2,pt3,eta3,y3,pt4,eta4,y4,dphi,"
-	   << "nj,n_meson,n_glu" ;
+     << "nj,n_meson,n_glu" ;
 
   if(weighted)
     file_evt << ", weight";
@@ -286,7 +262,7 @@ int main(int argc, char** argv) {
   int pythia_status=-1;
 
   while ((!m_lhe && (iEvent < nEvent)) || 
-	 (m_lhe && (iTotal < nEvent) && !end)) 
+   (m_lhe && (iTotal < nEvent) && !end)) 
   {
     // Clear delphes
     delphes->Clear();
@@ -296,28 +272,28 @@ int main(int argc, char** argv) {
       
       // Renew an event
       if (iTotal % 5 == 0) {
-      	while (!(pythia_status=pythia.next())) {
+        while (!(pythia_status=pythia.next())) {
 
-      	  if(pythia.info.atEndOfFile()){
-      	    cout <<"Pythia reached end of file"<<endl;
-      	    end=true;
+          if(pythia.info.atEndOfFile()){
+            cout <<"Pythia reached end of file"<<endl;
+            end=true;
             sim_failed=true;
-      	    break;     
-      	  }
+            break;     
+          }
 
-  	      if (++iAbort < nAbort) continue;
-  	  
-      	  cerr << "ERROR: Event generation aborted prematurely, owing to error!" << endl;
+          if (++iAbort < nAbort) continue;
+      
+          cerr << "ERROR: Event generation aborted prematurely, owing to error!" << endl;
           sim_failed=true;
-      	  break; 
+          break; 
           
-      	}
-	
-	saved_event = pythia.event;
+        }
+  
+  saved_event = pythia.event;
       }
 
       else pythia.event = saved_event;
-	
+  
       // Run hadronization
       pythia.forceHadronLevel();
     }
@@ -326,20 +302,20 @@ int main(int argc, char** argv) {
       // Tell pythia to run pythia.next()
       while (!(pythia_status=pythia.next())) {
 
-	cout<<"Pythia failed, status "<<pythia_status<<endl;
+  cout<<"Pythia failed, status "<<pythia_status<<endl;
 
-	  if(pythia.info.atEndOfFile()){
-	    cout <<"Pythia reached end of file"<<endl;
-	    end=true;
-	    sim_failed=true;
-	    break; 
-	  }
-	  
-	  if (++iAbort < nAbort) continue;
-	  cerr<<"ERROR: Event generation aborted due to error!" 
-	       <<endl;
-	  sim_failed=true;
-	  return 1; 
+    if(pythia.info.atEndOfFile()){
+      cout <<"Pythia reached end of file"<<endl;
+      end=true;
+      sim_failed=true;
+      break; 
+    }
+    
+    if (++iAbort < nAbort) continue;
+    cerr<<"ERROR: Event generation aborted due to error!" 
+         <<endl;
+    sim_failed=true;
+    return 1; 
       }
     }
 
@@ -351,11 +327,11 @@ int main(int argc, char** argv) {
     //fill hepmc pointers, and write files
     if(hepmc){
       hepmcevt = new HepMC::GenEvent();
-      ToHepMC.fill_next_event( pythia, hepmcevt );
-      (*ascii_io) << hepmcevt;
-      delete hepmcevt;
-    }
 
+    ToHepMC.fill_next_event( pythia, hepmcevt );
+    (*ascii_io) << hepmcevt;
+    delete hepmcevt;
+    }
     
 
 
@@ -421,9 +397,9 @@ int main(int argc, char** argv) {
         continue;
 
       PseudoJet cmuon_v(cmuon->Momentum.Px(), 
-			cmuon->Momentum.Py(),
-			cmuon->Momentum.Pz(),
-			cmuon->Momentum.E());
+      cmuon->Momentum.Py(),
+      cmuon->Momentum.Pz(),
+      cmuon->Momentum.E());
 
       selected_leptons.push_back(cmuon_v);
     }    
@@ -456,15 +432,15 @@ int main(int argc, char** argv) {
       Candidate* cjet = (Candidate*) jets->At(i);
 
       if(cjet->Momentum.Pt()<30.0)
-	continue;
-	
+  continue;
+  
       if(fabs(cjet->Momentum.Eta())>2.8)
-	continue;
+  continue;
 
       PseudoJet cjet_v(cjet->Momentum.Px(), 
-		       cjet->Momentum.Py(),
-		       cjet->Momentum.Pz(),
-		       cjet->Momentum.E());
+           cjet->Momentum.Py(),
+           cjet->Momentum.Pz(),
+           cjet->Momentum.E());
 
       //store the jets
       selected_jets.push_back(cjet_v);
@@ -500,22 +476,22 @@ int main(int argc, char** argv) {
     
       for(int i=0; i<selected_jets.size(); i++){
       file_obj << iEvent << ",j,"
-	       << i+1 << ","
-	       << selected_jets[i] 
-	       << jets_ntrk[i] <<endl;  
+         << i+1 << ","
+         << selected_jets[i] 
+         << jets_ntrk[i] <<endl;  
     }    
 
     //print the leptons
     for(int i=0; i<selected_leptons.size(); i++){
       file_obj << iEvent << ",l,"
-	       << i+1 << ","
-	       << selected_leptons[i] <<"1"
-	       << endl;  
+         << i+1 << ","
+         << selected_leptons[i] <<"1"
+         << endl;  
     }
     //print met
     file_obj << iEvent <<",met,"
-	     << 1 << "," 
-	     << MEt<<"0"<<endl;
+       << 1 << "," 
+       << MEt<<"0"<<endl;
 
     */
 
@@ -538,22 +514,22 @@ int main(int argc, char** argv) {
       // We expect the next particle to be an anti-pion
       // if not, there is an error!
       if(i+1 >= event.size() || event[i+1].id() != -4900211)
-	{
-	  cout 
-	    << "ERROR: invisible pions not coming in pairs!" 
-	    << endl;
-	  continue;
-	}
+  {
+    cout 
+      << "ERROR: invisible pions not coming in pairs!" 
+      << endl;
+    continue;
+  }
 
       n_dark++;
       
       Particle& p_next = event[i+1];
 
       PseudoJet
-	meson( p.px() + p_next.px(),
-	       p.py() + p_next.py(),
-	       p.pz() + p_next.pz(),
-	       p.e() + p_next.e() );
+  meson( p.px() + p_next.px(),
+         p.py() + p_next.py(),
+         p.pz() + p_next.pz(),
+         p.e() + p_next.e() );
       
       dark_mesons.push_back( meson );
       inv_jet += meson;
@@ -568,13 +544,13 @@ int main(int argc, char** argv) {
 
     for(int i=0; i<4; i++){
       if(selected_jets.size() > i){
-	pt_list[i]=selected_jets[i].pt();
-	eta_list[i]=selected_jets[i].eta();	
-	y_list[i]=selected_jets[i].rap();
+  pt_list[i]=selected_jets[i].pt();
+  eta_list[i]=selected_jets[i].eta(); 
+  y_list[i]=selected_jets[i].rap();
       }
       else{
-	pt_list[i]=-1;
-	eta_list[i]=999;
+  pt_list[i]=-1;
+  eta_list[i]=999;
       }
     }
 
@@ -584,25 +560,25 @@ int main(int argc, char** argv) {
       Mt_ = (MEt+selected_jets[0]+selected_jets[1]).mperp();
 
     file_evt<<iEvent<<","
-	    << MEt.pt()<<","    
-	    << mjj <<","
-	    << Mt_ << ","
-	    << pt_list[0]<<","
-	    << eta_list[0]<<","      
-	    << y_list[0]<<","      
-	    << pt_list[1]<<","
-	    << eta_list[1]<<","      
-	    << y_list[1]<<","      
-	    << pt_list[2]<<","
-	    << eta_list[2]<<","      
-	    << y_list[2]<<","      
-	    << pt_list[3]<<","
-	    << eta_list[3]<<","      
-	    << y_list[3]<<","      
-	    << dphijj<<","
-	    << selected_jets.size()<<","
-	    << get_nmeson(event) << ","
-	    << get_glu(event);
+      << MEt.pt()<<","    
+      << mjj <<","
+      << Mt_ << ","
+      << pt_list[0]<<","
+      << eta_list[0]<<","      
+      << y_list[0]<<","      
+      << pt_list[1]<<","
+      << eta_list[1]<<","      
+      << y_list[1]<<","      
+      << pt_list[2]<<","
+      << eta_list[2]<<","      
+      << y_list[2]<<","      
+      << pt_list[3]<<","
+      << eta_list[3]<<","      
+      << y_list[3]<<","      
+      << dphijj<<","
+      << selected_jets.size()<<","
+      << get_nmeson(event) << ","
+      << get_glu(event);
 
     if(weighted){
       file_evt << ", " << pythia.info.weight();
@@ -636,7 +612,7 @@ int main(int argc, char** argv) {
   cout<<iEvent<<" total events"<<endl;
 
   file_meta<<"nevt, npass, eff, total, pass, "
-	   <<"ptcut, metcut, cxn, cxn_err";
+     <<"ptcut, metcut, cxn, cxn_err";
 
   if(weighted)
     file_meta << ", sum_weight";
@@ -644,13 +620,13 @@ int main(int argc, char** argv) {
   file_meta<<endl;
 
   file_meta<<iTotal<<","<<iEvent<<","
-	   <<iEvent/double(iTotal)<<","
-	   <<iTotal<<","
-	   <<iEvent<<","
-	   <<pt_min<<","
-	   <<met_min<<","
-	   <<pythia.info.sigmaGen()*1e9<<","
-	   <<pythia.info.sigmaErr()*1e9;
+     <<iEvent/double(iTotal)<<","
+     <<iTotal<<","
+     <<iEvent<<","
+     <<pt_min<<","
+     <<met_min<<","
+     <<pythia.info.sigmaGen()*1e9<<","
+     <<pythia.info.sigmaErr()*1e9;
 
   if(weighted)
     file_meta << ", "<< pythia.info.weightSum();

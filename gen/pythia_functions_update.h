@@ -158,17 +158,17 @@ void init_hidden(Pythia& pythia,
   
   //mass of scalar dark quark
   //fix width to be small
-  pythia.readString(add_st("4900101:m0 = ", mass/2));
+  pythia.readString(add_st("4900101:m0 = ", mass));
 
   // off-diagonal mesons
-  pythia.readString(add_st("4900211:m0 = ", mass));
-  pythia.readString(add_st("4900213:m0 = ", mass));
+  pythia.readString(add_st("4900211:m0 = ", 2*mass));
+  pythia.readString(add_st("4900213:m0 = ", 2*mass));
 
   //fix mass of dark scalar mesons
   //spin 0 diagonal 
-  pythia.readString(add_st("4900111:m0 = ", mass));
+  pythia.readString(add_st("4900111:m0 = ", 2*mass));
   //spin 1 diagonal
-  pythia.readString(add_st("4900113:m0 = ", mass));
+  pythia.readString(add_st("4900113:m0 = ", 2*mass));
 
   /*
   pythia.readString
@@ -194,9 +194,10 @@ void init_hidden(Pythia& pythia,
   //diagonal meson mass
 
   //stop showering when pt less than threshold
+  /*
   pythia.readString
     (add_st("HiddenValley:pTminFSR = ", mass));
-    
+  */
   
   cout << "Turning on direct production" << endl;
 

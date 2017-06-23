@@ -46,7 +46,7 @@
 #include "CmdLine/CmdLine.hh"
 
 // To simplify code moving all unnecessary functions to this file
-#include "pythia_functions_update.h"
+#include "pythia_functions.h"
 
 //using namespace Pythia8;
 using namespace fastjet;

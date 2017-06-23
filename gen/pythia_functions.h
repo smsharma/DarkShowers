@@ -130,7 +130,7 @@ void init_hidden(Pythia& pythia,
  
   //stop showering when pt less than threshold
   pythia.readString
-    (add_st("HiddenValley:pTminFSR = ", mass));
+    (add_st("HiddenValley:pTminFSR = ", 1.1*lambda));
     
   
   //do one flavor showering

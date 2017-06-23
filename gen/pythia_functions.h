@@ -471,8 +471,8 @@ void setvis_scalar(Pythia& pythia,
 
 int get_nmeson(const Pythia8::Event& evt){
   
-  int pdgid_rho = 4900113;
-  int pdgid_meson = 4900111;
+  int pdgid_rho = 4900213;
+  int pdgid_meson = 4900211;
 
   // int pdgid_rho = 4900113;
   // int pdgid_meson = 4900111;

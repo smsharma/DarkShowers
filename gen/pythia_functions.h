@@ -483,7 +483,7 @@ int get_nmeson(const Pythia8::Event& evt){
 
 
     if(((abs(p.id()) == pdgid_rho) ||
-	(abs(p.id()) == pdgid_meson))){
+	(abs(p.id()) == pdgid_meson)  && (p.statusHepMC() == 1))){
       // cout << "pdgid " << p.id() << " status " << p.statusHepMC() << endl;    
       n_meson ++;
     }

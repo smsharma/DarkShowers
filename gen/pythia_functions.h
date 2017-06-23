@@ -410,10 +410,69 @@ ostream& operator<< (ostream &out, Timer& mytime){
   return out;
 }
 
+
+void setvis_vector(Pythia& pythia,
+		   int id,
+		   double inv)
+{
+  pythia.readString(to_st(id) + ":addchannel = 1 " 
+		    + to_st(inv)
+		    + " 0 12 -12");
+
+  pythia.readString(to_st(id) + ":onechannel = 1 " 
+		    + to_st((1-inv)/5.)
+		    + " 91 -1 1");
+
+  pythia.readString(to_st(id) + ":onechannel = 1 " 
+		    + to_st((1-inv)/5.)
+		    + " 91 -2 2");
+
+  pythia.readString(to_st(id) + ":onechannel = 1 " 
+		    + to_st((1-inv)/5.)
+		    + " 91 -3 3");
+
+  pythia.readString(to_st(id) + ":onechannel = 1 " 
+		    + to_st((1-inv)/5.)
+		    + " 91 -4 4");
+
+  pythia.readString(to_st(id) + ":onechannel = 1 " 
+		    + to_st((1-inv)/5.)
+		    + " 91 -5 5");
+
+}
+
+void setvis_scalar(Pythia& pythia,
+		   int id,
+		   double inv)
+{
+  pythia.readString(to_st(id) + ":addchannel = 1 " 
+		    + to_st(inv)
+		    + " 0 12 -12");
+
+  double bmass=4.18;
+  double cmass=1.3;
+  double smass=.095;
+
+  double factor= 1/(bmass*bmass + cmass*cmass + smass*smass);
+
+  pythia.readString(to_st(id) + ":onechannel = 1 " 
+		    + to_st(factor*bmass*bmass*(1-inv))
+		    + " 91 -5 5");
+
+  pythia.readString(to_st(id) + ":onechannel = 1 " 
+		    + to_st(factor*cmass*cmass*(1-inv))
+		    + " 91 -4 4");
+
+  pythia.readString(to_st(id) + ":onechannel = 1 " 
+		    + to_st(factor*smass*smass*(1-inv))
+		    + " 91 -3 3");
+
+}
+
 int get_nmeson(const Pythia8::Event& evt){
   
-  int pdgid_rho = 4900213;
-  int pdgid_meson = 4900211;
+  int pdgid_rho = 4900113;
+  int pdgid_meson = 4900111;
 
   // int pdgid_rho = 4900113;
   // int pdgid_meson = 4900111;
@@ -424,7 +483,7 @@ int get_nmeson(const Pythia8::Event& evt){
 
 
     if(((abs(p.id()) == pdgid_rho) ||
-       (abs(p.id()) == pdgid_meson)) && (p.statusHepMC() == 1) ){
+	(abs(p.id()) == pdgid_meson))){
       // cout << "pdgid " << p.id() << " status " << p.statusHepMC() << endl;    
       n_meson ++;
     }

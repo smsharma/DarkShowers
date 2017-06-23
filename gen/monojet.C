@@ -46,7 +46,7 @@
 #include "CmdLine/CmdLine.hh"
 
 // To simplify code moving all unnecessary functions to this file
-#include "pythia_functions.h"
+#include "pythia_functions_update.h"
 
 //using namespace Pythia8;
 using namespace fastjet;
@@ -130,6 +130,7 @@ int main(int argc, char** argv) {
   if(!cmdline.present("-v"))
     pythia.readString("Print:quiet = on");
 
+
   string hepmc_file;
   bool hepmc=false;
   if(cmdline.present("-hepmc")){
@@ -139,7 +140,6 @@ int main(int argc, char** argv) {
     ascii_io=new HepMC::IO_GenEvent(hepmc_file.c_str(), std::ios::out);
   }
   
-  pythia.readString("Print:quiet = on");
   
 
 
@@ -349,11 +349,12 @@ int main(int argc, char** argv) {
 
     
     //fill hepmc pointers, and write files
-    if(hepmc)
+    if(hepmc){
       hepmcevt = new HepMC::GenEvent();
-    ToHepMC.fill_next_event( pythia, hepmcevt );
-    (*ascii_io) << hepmcevt;
-    delete hepmcevt;
+      ToHepMC.fill_next_event( pythia, hepmcevt );
+      (*ascii_io) << hepmcevt;
+      delete hepmcevt;
+    }
 
     
 

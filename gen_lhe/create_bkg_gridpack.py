@@ -13,8 +13,8 @@ mg_dir = base_dir + "/MG5_aMC_v2_5_6_patch/bin/" # MadGraph directory
 data_dir = base_dir + "/data/"
 
 # Which backgrounds should generate (gridpacks should exist in these dirs already)
-# bkg_prefix = ["bkg_Zj", "bkg_Wj", "bkg_ttbar_semilep", "bkg_ttbar_dilep"]
-bkg_prefix = ["bkg_qcd", "bkg_ttbar_dilep"]
+bkg_prefix = ["bkg_Zj", "bkg_Wj", "bkg_ttbar_semilep", "bkg_ttbar_dilep"]
+# bkg_prefix = ["bkg_qcd"]
 
 
 batch='''#!/bin/bash
@@ -25,7 +25,7 @@ batch='''#!/bin/bash
 ##SBATCH --mail-type=begin
 ##SBATCH --mail-type=end
 ##SBATCH --mail-user=smsharma@princeton.edu
-#SBATCH -p dept
+#SBATCH -p hepheno
 source /opt/rh/devtoolset-3/enable
 source activate venv_py27
 source /group/hepheno/smsharma/Dark-Showers/env.sh
@@ -39,6 +39,7 @@ for ibkg, prefix in enumerate(bkg_prefix):
 
 	# Copy over gridpack to temp
 	batchn += "./bin/generate_events -f" +"\n" # Clean up previous gridpack
+	# batchn += "rm -r madevent" +"\n" # Make folder for this run
 	batchn += "tar -xvf run_01_gridpack.tar.gz" + "\n" # Clean up previous gridpack
 	batchn += "./madevent/bin/compile" +"\n" # Make folder for this run
 	

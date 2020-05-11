@@ -33,42 +33,42 @@ string to_st(int number){
 
 //initialize t_channel processes
 void init_tchannel(Pythia& pythia,
-		   double mphi=1000.,
-		   double pt_cut=500)
+       double mphi=1000.,
+       double pt_cut=500)
 {
   Sigma2Process* myprocess = new HiddenTChannel(4900101, 666,0.01,mphi);
 
   // apply a phase-space cut to speed up MC generation
   pythia.readString(add_st("PhaseSpace:pTHatMin = ",
-				pt_cut));
+        pt_cut));
   pythia.setSigmaPtr(myprocess);     
 }
 
 void init_hidden(Pythia& pythia, 
-		 double mass=20.0,
-		 double lambda=1.0,
-		 double inv = 0.3,
-		 bool run=true,
-		 int Nc=2,
-		 int NFf=2,
-		 int NBf=0
-		 )
+     double mass=20.0,
+     double lambda=1.0,
+     double inv = 0.3,
+     bool run=true,
+     int Nc=2,
+     int NFf=2,
+     int NBf=0
+     )
 {
   
   pythia.readString("HiddenValley:Ngauge  = " +
-		    to_st(Nc) );
+        to_st(Nc) );
 
   if(run){
     pythia.readString("HiddenValley:Run = on");
     pythia.readString(add_st
-		      ("HiddenValley:Lambda = ", lambda));
+          ("HiddenValley:Lambda = ", lambda));
     
     cout<<"running coupling: conf. scale "<<lambda<<endl;
 
-    double b = 11./3 *Nc - 1./6. * NBf - 1./3. * NFf;
+    double b = 11./3 *Nc - 1./6. * NBf - 2./3. * NFf;
 
     cout<<"alpha(TeV) = "
-	<<2*PI / (b*log(1000/lambda))<<endl;
+  <<2*PI / (b*log(1000/lambda))<<endl;
       
   }
 
@@ -163,42 +163,42 @@ void init_hidden(Pythia& pythia,
   //due to helicity suppression
   //ignore light flavor
   pythia.readString("4900111:onechannel = 1 " 
-		    + to_st(1.0-inv)
-		    + " 91 -3 3");
+        + to_st(1.0-inv)
+        + " 91 -3 3");
 
   //invisible ratio
   //proportion ~inv of the time 
   //the meson is invisible
   pythia.readString("4900111:addchannel = 1 " 
-		    + to_st(inv)
-		    + " 0 4900211 -4900211");
+        + to_st(inv)
+        + " 0 4900211 -4900211");
 
   //spin 1 meson decay
   //democratic to all flavors
   pythia.readString("4900113:onechannel = 1 " 
-		    + to_st((1-inv)/5.)
-		      + " 91 -1 1");
+        + to_st((1-inv)/5.)
+          + " 91 -1 1");
 
   pythia.readString("4900113:addchannel = 1 " 
-		    + to_st((1-inv)/5.)
-		      + " 91 -2 2");
+        + to_st((1-inv)/5.)
+          + " 91 -2 2");
   
   pythia.readString("4900113:addchannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -3 3");
+        + to_st((1-inv)/5.)
+        + " 91 -3 3");
 
   pythia.readString("4900113:addchannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -4 4");
+        + to_st((1-inv)/5.)
+        + " 91 -4 4");
   
   pythia.readString("4900113:addchannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -5 5");
+        + to_st((1-inv)/5.)
+        + " 91 -5 5");
   
   //spin 1 invisible ratio
   pythia.readString("4900113:addchannel = 1 " 
-		    + to_st(inv)
-		    + " 0 4900213 -4900213");
+        + to_st(inv)
+        + " 0 4900213 -4900213");
   
   //can also decay into 3 gluons through loops
   //should be seriously suppressed, commented
@@ -276,9 +276,9 @@ void init_qcd(Pythia& pythia, string mode)
 
 // Function to input all particles to Delphes
 void Pythia_to_Delphes(DelphesFactory* factory, 
-		       TObjArray* ary,
-		       Pythia8::Event& evt,
-		       vector<PseudoJet>* muons=NULL){
+           TObjArray* ary,
+           Pythia8::Event& evt,
+           vector<PseudoJet>* muons=NULL){
 
   // Loop over particles
   for(int i=0; i<evt.size(); ++i){
@@ -286,7 +286,7 @@ void Pythia_to_Delphes(DelphesFactory* factory,
 
     
     if(!p.isVisible() || (p.statusHepMC()) != 1)
-	    continue;
+      continue;
     
     Candidate* can = factory->NewCandidate();
     can->PID = p.id() ;
@@ -362,10 +362,10 @@ ostream& operator<< (ostream &out, Timer& mytime){
   if(mytime.time_list.size() > mytime.max_interval){
 
     past = mytime.time_list[ mytime.time_list.size() - 
-			     mytime.max_interval ];
+           mytime.max_interval ];
 
     proc_past = mytime.proc_list[ mytime.proc_list.size() - 
-				  mytime.max_interval ];
+          mytime.max_interval ];
   }
 
   //estimate percentage done
@@ -388,19 +388,19 @@ ostream& operator<< (ostream &out, Timer& mytime){
 
   if(day > 0)
     sout<<day<<"d "
-	<<setfill('0') << setw(2)<<hr<<"h "
-	<<setfill('0') << setw(2)<<min<<"m "
-	<<setfill('0') << setw(2)<<sec<<"s";
+  <<setfill('0') << setw(2)<<hr<<"h "
+  <<setfill('0') << setw(2)<<min<<"m "
+  <<setfill('0') << setw(2)<<sec<<"s";
 
   else if(hr > 0)
     sout<<hr<<"h "
-	<<setfill('0') << setw(2)<<min<<"m "
-	<<setfill('0') << setw(2)<<sec<<"s";
+  <<setfill('0') << setw(2)<<min<<"m "
+  <<setfill('0') << setw(2)<<sec<<"s";
 
   
   else if(min > 0)
     sout<<min<<"m "
-	<<setfill('0') << setw(2)<<sec<<"s";
+  <<setfill('0') << setw(2)<<sec<<"s";
   
   else if(sec > 0)
     sout<<sec<<"s";
@@ -412,42 +412,42 @@ ostream& operator<< (ostream &out, Timer& mytime){
 
 
 void setvis_vector(Pythia& pythia,
-		   int id,
-		   double inv)
+       int id,
+       double inv)
 {
   pythia.readString(to_st(id) + ":addchannel = 1 " 
-		    + to_st(inv)
-		    + " 0 12 -12");
+        + to_st(inv)
+        + " 0 12 -12");
 
   pythia.readString(to_st(id) + ":onechannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -1 1");
+        + to_st((1-inv)/5.)
+        + " 91 -1 1");
 
   pythia.readString(to_st(id) + ":onechannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -2 2");
+        + to_st((1-inv)/5.)
+        + " 91 -2 2");
 
   pythia.readString(to_st(id) + ":onechannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -3 3");
+        + to_st((1-inv)/5.)
+        + " 91 -3 3");
 
   pythia.readString(to_st(id) + ":onechannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -4 4");
+        + to_st((1-inv)/5.)
+        + " 91 -4 4");
 
   pythia.readString(to_st(id) + ":onechannel = 1 " 
-		    + to_st((1-inv)/5.)
-		    + " 91 -5 5");
+        + to_st((1-inv)/5.)
+        + " 91 -5 5");
 
 }
 
 void setvis_scalar(Pythia& pythia,
-		   int id,
-		   double inv)
+       int id,
+       double inv)
 {
   pythia.readString(to_st(id) + ":addchannel = 1 " 
-		    + to_st(inv)
-		    + " 0 12 -12");
+        + to_st(inv)
+        + " 0 12 -12");
 
   double bmass=4.18;
   double cmass=1.3;
@@ -456,16 +456,16 @@ void setvis_scalar(Pythia& pythia,
   double factor= 1/(bmass*bmass + cmass*cmass + smass*smass);
 
   pythia.readString(to_st(id) + ":onechannel = 1 " 
-		    + to_st(factor*bmass*bmass*(1-inv))
-		    + " 91 -5 5");
+        + to_st(factor*bmass*bmass*(1-inv))
+        + " 91 -5 5");
 
   pythia.readString(to_st(id) + ":onechannel = 1 " 
-		    + to_st(factor*cmass*cmass*(1-inv))
-		    + " 91 -4 4");
+        + to_st(factor*cmass*cmass*(1-inv))
+        + " 91 -4 4");
 
   pythia.readString(to_st(id) + ":onechannel = 1 " 
-		    + to_st(factor*smass*smass*(1-inv))
-		    + " 91 -3 3");
+        + to_st(factor*smass*smass*(1-inv))
+        + " 91 -3 3");
 
 }
 
@@ -483,7 +483,7 @@ int get_nmeson(const Pythia8::Event& evt){
 
 
     if(((abs(p.id()) == pdgid_rho) ||
-	(abs(p.id()) == pdgid_meson)  && (p.statusHepMC() == 1))){
+  (abs(p.id()) == pdgid_meson)  && (p.statusHepMC() == 1))){
       // cout << "pdgid " << p.id() << " status " << p.statusHepMC() << endl;    
       n_meson ++;
     }
@@ -498,7 +498,7 @@ int get_nmeson(const Pythia8::Event& evt){
     
     
   }
-  cout<<"total particle number: "<<n_meson<<endl;
+  // cout<<"total particle number: "<<n_meson<<endl;
   return n_meson;
 
 }
@@ -543,20 +543,20 @@ double get_dphijj(const PseudoJet& met, const vector<PseudoJet>& jets){
 }
 
 double get_Mt(const PseudoJet& MEt,
-	      const PseudoJet& jj){
+        const PseudoJet& jj){
 
   double ET= jj.mperp();
   double MT = sqrt(jj.m2()+ 2*
-		   (MEt.pt()*jj.pt() -
-		    dot3(jj, MEt)));
+       (MEt.pt()*jj.pt() -
+        dot3(jj, MEt)));
 
   return MT;
 }
 
 
 double get_Mt(const PseudoJet& MEt,
-	      const PseudoJet& jet1_,
-	      const PseudoJet& jet2_){
+        const PseudoJet& jet1_,
+        const PseudoJet& jet2_){
 
   return get_Mt(MEt, jet1_ + jet2_);
 }
@@ -565,4 +565,3 @@ double get_Mt(const PseudoJet& MEt,
 
 
 #endif
-

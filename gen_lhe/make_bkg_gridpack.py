@@ -8,21 +8,22 @@ import sys, os
 import random
 
 base_dir = "/group/hepheno/smsharma/Dark-Showers/"
-
+extra_string = ""
 mg_dir = base_dir + "/MG5_aMC_v2_5_6_patch/bin/" # MadGraph directory
 data_dir = base_dir + "/data/"
 
 # Which backgrounds should generate (gridpacks should exist in these dirs already)
-# bkg_prefix = ["bkg_qcd", "bkg_Zj", "bkg_Wj", "bkg_ttbar_semilep", "bkg_ttbar_dilep"]
-bkg_prefix = ["bkg_qcd"]
+bkg_prefix = ["bkg_qcd", "bkg_Zj", "bkg_Wj", "bkg_ttbar_semilep", "bkg_ttbar_dilep"]
+# bkg_prefix = ["bkg_ttbar_dilep"]
 
 nevents = 5000 # Events per job
-ijobs = [200, 0, 0, 0] # Start index
-njobs = [400, 0, 0,0] # Number of jobs to submit
+ijobs = [800, 200, 200,200,200] # Start index
+njobs = [1200, 800, 800,800,800] # Number of jobs to submit
 
-# nmatch = [4, 2, 2, 5, 3] # Pythia nmatch parameter
-nmatch = [4] # Pythia nmatch parameter
+nmatch = [4, 2, 2, 5, 3] # Pythia nmatch parameter
+# nmatch = [3] # Pythia nmatch parameter
 recluster = False # Whether to recluster jets in pythia
+recluster_post = True # Whether to recluster jets in pythia
 
 if recluster:
 	recluster_str = " -Zprime "
@@ -72,16 +73,18 @@ for ibkg, prefix in enumerate(bkg_prefix):
 		# Munge LHE file
 		lhe_file = "/tmp/sid_tmp/gridpack_" + str(ij) + "/events.lhe"
 		batchn += "gunzip " + lhe_file + ".gz\n" #
-		batchn += "cp " + lhe_file + " " + mg_dir + prefix + "/Events/events_" + str(ij) + ".lhe" "\n" #
-		lhe_file = mg_dir + prefix + "/Events/events_"+ str(ij) + ".lhe"
+		batchn += "cp " + lhe_file + " " + mg_dir + prefix + "/Events/events_" + extra_string + str(ij) + ".lhe" "\n" #
+		lhe_file = mg_dir + prefix + "/Events/events_" + extra_string + str(ij) + ".lhe"
 
 		# Clean up
 		batchn += "rm -rf /tmp/sid_tmp/gridpack_" +  str(ij) + "\n" 		
 
 		# Run pythia script
 		batchn += "cd " + base_dir + "/gen/\n" # Go to Pythia script folder
-		batchn += "./monojet.exe -m lhe -w -i " + lhe_file + " -metmin 0 " + recluster_str + " -n " + str(nevents) + " -o " + data_dir + prefix + "/events_" + str(ij) + " -nmatch " + str(nmatch[ibkg]) + "\n"
-		
+		batchn += "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/group/hepheno/heptools/HepMC-2.06.09/lib/\n" # Go to Pythia script folder
+		batchn += "./monojet.exe -m lhe -v -w -i " + lhe_file + " -metmin 0 " + recluster_str + " -n " + str(nevents) + " -o " + data_dir + prefix + "/events_" + extra_string+ str(ij) + " -nmatch " + str(nmatch[ibkg]) + "\n"
+		if recluster_post:
+			batchn += "./monojet.exe -m lhe -v -w -i " + lhe_file + " -metmin 0 -Zprime -n " + str(nevents) + " -o " + data_dir + prefix + "/events_reclustered_" + extra_string+ str(ij) + " -nmatch " + str(nmatch[ibkg]) + "\n"
 		fname = "batch/batch_" + prefix + "_" + str(ij) + ".batch" # 
 		f=open(fname, "w")
 		f.write(batchn)

@@ -57,9 +57,10 @@ for isig, prefix in enumerate(sig_prefix):
             batchn += "cd /tmp/sid_tmp/" + mg_base + "_" + prefix + "_" + str(mass) + "_" + str(ij) + "/bin/" + prefix + "\n"  # Go to folder
             batchn += "rm RunWeb" + "\n"
 
-            batchn += "sed -i 's/<PhiMass>/" + str(mass) + "/g' Cards/param_card.dat\n"  # Change events in MG run card
-            batchn += "sed -i 's/<DarkQuarkMass>/" + str(mdark) + "/g' Cards/param_card.dat\n"  # Change events in MG run card
-            batchn += "sed -i 's/<Seed>/" + str(seeds[ij - ijobs[isig]]) + "/g' Cards/run_card.dat\n"  # Change events in MG run card
+            batchn += "sed -i 's/<PhiMass>/" + str(mass) + "/g' Cards/param_card.dat\n"  # Change params in MG card
+            batchn += "sed -i 's/<DarkQuarkMass>/" + str(mdark) + "/g' Cards/param_card.dat\n"  # Change params in MG card
+            batchn += "sed -i 's/<Seed>/" + str(seeds[ij - ijobs[isig]]) + "/g' Cards/run_card.dat\n"  # Change params in MG card
+
             # Generate MG events
             batchn += "./bin/generate_events -f " + "\n"
 
